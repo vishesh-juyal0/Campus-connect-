@@ -1,0 +1,28 @@
+1|OOP|Concept|class,object,constructor,destructor|Write one small class (e.g. Student) and add each concept to it one by one: constructor, destructor, static member, then a copy constructor.
+2|OOP|Practice|constructor,copy|Print a message inside every constructor and destructor. Watching the order of calls makes object lifetime much easier to understand.
+3|OOP|Concept|operator,overloading|For operator overloading, first write the operation as a normal function like add(a, b), then convert it to operator+.
+4|OOP|Practice|friend,operator,overloading|Overload << and >> as friend functions for one class so you can print and read objects directly; this comes up often in exams.
+5|OOP|Concept|inheritance,base,derived,access|Draw a table of public, protected and private members against public, protected and private inheritance. Fill it once by hand and you will remember it.
+6|OOP|Practice|inheritance,constructor,virtual base|Trace constructor and destructor call order in multilevel and multiple inheritance by printing from each class.
+7|OOP|Concept|virtual,polymorphism,binding,abstract|Compare a base-class pointer calling a normal function vs a virtual function. Seeing both outputs side by side explains early vs late binding.
+8|OOP|Practice|pure virtual,abstract,destructor|Make a Shape abstract class with a pure virtual area() and derive Circle and Rectangle. Then add a virtual destructor and explain why it is needed.
+9|OOP|Concept|file,stream,fstream,i/o|Practise the basic file cycle: open, check if it opened, read or write in a loop, close. Most file bugs come from skipping the check.
+10|OOP|Practice|exception,try,catch,throw|Write a divide function that throws on zero and catch it in main. Then re-throw it from a middle function to see how exceptions travel.
+11|OOP|Concept|stl,vector,list,map,container|Learn STL by use case: vector for indexed data, list for frequent middle inserts, map for key-value lookup.
+12|OOP|Revision|recursion,function,inline,array,string|Revise Unit 1 by rewriting three old programs without looking: an array program, a string program and a recursive function.
+13|OOP|Revision|class,inheritance,virtual|After finishing a unit, explain its main concept aloud in two minutes without notes. Gaps in the explanation show what to revise.
+14|DSA|Concept|array,sparse,matrix|For sparse matrices, convert a small 4x4 matrix to triplet form by hand before writing code.
+15|DSA|Concept|stack,push,pop,infix,postfix|Dry-run infix to postfix conversion on paper with a stack column and an output column. Do at least five expressions.
+16|DSA|Practice|recursion,hanoi,tail|Trace Tower of Hanoi for 3 disks using a recursion tree; count the moves and check that it equals 2^n - 1.
+17|DSA|Concept|queue,circular,priority,dequeue|For circular queues, write front and rear values after every operation. Most mistakes are in the full and empty conditions.
+18|DSA|Practice|linked list,insertion,deletion,doubly|Draw boxes and arrows for every linked list insertion and deletion before coding it. Always test the empty list and single node cases.
+19|DSA|Concept|tree,binary,traversal,threaded,huffman|Write the inorder, preorder and postorder of the same tree by hand, then check your code against them.
+20|DSA|Practice|search,binary search,hash,hashing,collision|Insert ten keys into a small hash table using linear probing and chaining on paper to compare collision handling.
+21|DSA|Concept|sort,sorting,quick,merge,heap,insertion,bubble|Make one table of all sorting algorithms with best, average and worst time, space and stability. Revise from the table.
+22|DSA|Practice|bst,avl,binary search tree|Insert 1 to 7 in order into a BST and then into an AVL tree. Comparing the two shapes shows why balancing matters.
+23|DSA|Concept|graph,bfs,dfs,spanning,b tree,file|For BFS and DFS, keep the queue or stack contents visible at every step while tracing a small graph.
+24|DSA|Revision|stack,queue,linked list,tree,sort|After completing a topic, solve two previous-year exam questions on it within a time limit.
+25|General|Productivity|focus,time|Study in 45-minute blocks with a 10-minute break. Put your phone in another room during each block.
+26|General|Productivity|plan,weekly|Plan the week on Sunday: list the units due, then split them into daily tasks with realistic hours.
+27|General|Revision|revision,exam|Use spaced revision: review a finished topic after 1 day, 3 days and 7 days.
+28|General|Productivity|hours,target|If you keep missing your hour targets, lower them for a week and build up. Consistency matters more than long sessions.
