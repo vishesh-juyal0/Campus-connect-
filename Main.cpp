@@ -3,6 +3,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <queue>
 #include <algorithm>
 #include <iomanip>
 #include <cstdlib>
@@ -614,6 +615,422 @@ public:
             case 8:
                 loadFromFile();
                 cout << tips.size() << " tips loaded.\n";
+                break;
+            case 0:
+                return;
+            }
+        }
+    }
+};
+struct Task
+{
+    int id;
+    string type;
+    string subject;
+    string topic;
+    string date;
+    double targetHours;
+    double hoursDone;
+    bool completed;
+};
+
+struct TaskNode
+{
+    Task data;
+    TaskNode *next;
+    TaskNode(const Task &t) : data(t), next(nullptr) {}
+};
+
+class StudyPlanner
+{
+    TaskNode *head;
+    TaskNode *tail;
+    int count;
+    int nextId;
+    string fileName;
+    queue<int> pendingQueue;
+
+    void appendTask(const Task &t)
+    {
+        TaskNode *node = new TaskNode(t);
+        if (!head)
+            head = tail = node;
+        else
+        {
+            tail->next = node;
+            tail = node;
+        }
+        count++;
+    }
+    void clearList()
+    {
+        while (head)
+        {
+            TaskNode *tmp = head;
+            head = head->next;
+            delete tmp;
+        }
+        tail = nullptr;
+        count = 0;
+    }
+
+    bool validDate(const string &d)
+    {
+        int y, m, day;
+        char c1, c2;
+        stringstream ss(d);
+        return (ss >> y >> c1 >> m >> c2 >> day) && c1 == '-' && c2 == '-' && m >= 1 && m <= 12 && day >= 1 && day <= 31;
+    }
+    string readDate(const string &msg)
+    {
+        while (true)
+        {
+            string d = readText(msg);
+            if (validDate(d))
+                return d;
+            cout << "Use format YYYY-MM-DD.\n";
+        }
+    }
+    Task *findTask(int id)
+    {
+        for (TaskNode *p = head; p; p = p->next)
+            if (p->data.id == id)
+                return &p->data;
+        return nullptr;
+    }
+
+    void loadFromFile()
+    {
+        ifstream in(fileName);
+        string line;
+        while (getline(in, line))
+        {
+            stringstream ss(line);
+            string f[8];
+            for (int i = 0; i < 8; i++)
+                getline(ss, f[i], '|');
+            try
+            {
+                Task t{stoi(f[0]), f[1], f[2], f[3], f[4], stod(f[5]), stod(f[6]), f[7] == "1"};
+                appendTask(t);
+                if (!t.completed)
+                    pendingQueue.push(t.id);
+                if (t.id >= nextId)
+                    nextId = t.id + 1;
+            }
+            catch (...)
+            {
+            }
+        }
+    }
+    void saveToFile()
+    {
+        ofstream out(fileName);
+        for (TaskNode *p = head; p; p = p->next)
+        {
+            const Task &t = p->data;
+            out << t.id << '|' << t.type << '|' << t.subject << '|' << t.topic << '|'
+                << t.date << '|' << t.targetHours << '|' << t.hoursDone << '|'
+                << t.completed << '\n';
+        }
+    }
+
+    void printHeader()
+    {
+        cout << left << setw(4) << "ID" << setw(8) << "Type" << setw(16) << "Subject"
+             << setw(28) << "Topic" << setw(12) << "Date" << "Progress\n"
+             << string(85, '-') << "\n";
+    }
+    void printTask(const Task &t)
+    {
+        cout << left << setw(4) << t.id << setw(8) << t.type << setw(16) << t.subject
+             << setw(28) << t.topic.substr(0, 26) << setw(12) << t.date
+             << fixed << setprecision(1) << t.hoursDone << "/" << t.targetHours << " hrs  "
+             << (t.completed ? "Done" : "Pending") << "\n";
+        cout.unsetf(ios::fixed);
+    }
+
+    static bool lessThan(const Task *a, const Task *b, int sortBy)
+    {
+        if (sortBy == 1)
+            return a->date < b->date;
+        if (sortBy == 2)
+            return (a->targetHours - a->hoursDone) < (b->targetHours - b->hoursDone);
+        return a->subject < b->subject;
+    }
+    static void mergeSort(vector<Task *> &v, int lo, int hi, int sortBy)
+    {
+        if (lo >= hi)
+            return;
+        int mid = (lo + hi) / 2;
+        mergeSort(v, lo, mid, sortBy);
+        mergeSort(v, mid + 1, hi, sortBy);
+        vector<Task *> tmp;
+        int i = lo, j = mid + 1;
+        while (i <= mid && j <= hi)
+            tmp.push_back(lessThan(v[j], v[i], sortBy) ? v[j++] : v[i++]);
+        while (i <= mid)
+            tmp.push_back(v[i++]);
+        while (j <= hi)
+            tmp.push_back(v[j++]);
+        for (int k = 0; k < (int)tmp.size(); k++)
+            v[lo + k] = tmp[k];
+    }
+
+public:
+    StudyPlanner(const string &file = "study_tasks.txt")
+        : head(nullptr), tail(nullptr), count(0), nextId(1), fileName(file)
+    {
+        loadFromFile();
+    }
+    ~StudyPlanner() { clearList(); }
+    StudyPlanner(const StudyPlanner &) = delete;
+    StudyPlanner &operator=(const StudyPlanner &) = delete;
+
+    void addTask(const string &type)
+    {
+        Task t;
+        t.id = nextId++;
+        t.type = type;
+        t.subject = readText("Subject (e.g. OOP, DSA): ");
+        t.topic = readText("Topic (e.g. Unit 2 - Linked List): ");
+        t.date = readDate(type == "Daily" ? "Date (YYYY-MM-DD): " : "Week start date (YYYY-MM-DD): ");
+        t.targetHours = readNumber("Target study hours: ", 0.5, type == "Daily" ? 24 : 100);
+        t.hoursDone = 0;
+        t.completed = false;
+        for (char &c : t.subject)
+            if (c == '|')
+                c = '/';
+        for (char &c : t.topic)
+            if (c == '|')
+                c = '/';
+        appendTask(t);
+        pendingQueue.push(t.id);
+        saveToFile();
+        cout << type << " task added with ID " << t.id << ".\n";
+    }
+
+    void viewTasks(const string &type)
+    {
+        bool any = false;
+        for (TaskNode *p = head; p; p = p->next)
+        {
+            const Task &t = p->data;
+            if (type != "All" && t.type != type)
+                continue;
+            if (!any)
+            {
+                printHeader();
+                any = true;
+            }
+            printTask(t);
+        }
+        if (!any)
+            cout << "No tasks found.\n";
+    }
+
+    void viewSorted()
+    {
+        if (!head)
+        {
+            cout << "No tasks found.\n";
+            return;
+        }
+        cout << "Sort by:\n 1. Date\n 2. Hours left (least first)\n 3. Subject\n";
+        int sortBy = (int)readNumber("Choice: ", 1, 3);
+
+        vector<Task *> arr;
+        for (TaskNode *p = head; p; p = p->next)
+            arr.push_back(&p->data);
+        mergeSort(arr, 0, (int)arr.size() - 1, sortBy);
+
+        printHeader();
+        for (Task *t : arr)
+            printTask(*t);
+    }
+
+    void markComplete()
+    {
+        Task *t = findTask((int)readNumber("Task ID to mark complete: ", 1, 100000));
+        if (!t)
+        {
+            cout << "Task not found.\n";
+            return;
+        }
+        if (t->completed)
+        {
+            cout << "Task is already complete.\n";
+            return;
+        }
+        t->completed = true;
+        saveToFile();
+        cout << "Task " << t->id << " marked complete.\n";
+    }
+
+    void logStudyHours()
+    {
+        Task *t = findTask((int)readNumber("Task ID: ", 1, 100000));
+        if (!t)
+        {
+            cout << "Task not found.\n";
+            return;
+        }
+        t->hoursDone += readNumber("Hours studied: ", 0.1, 24);
+        saveToFile();
+        cout << "Total for this task: " << t->hoursDone << "/" << t->targetHours << " hrs.\n";
+        if (t->hoursDone >= t->targetHours && !t->completed)
+            cout << "Target reached! You can mark this task complete.\n";
+    }
+
+    void studyReport()
+    {
+        if (!head)
+        {
+            cout << "No tasks yet.\n";
+            return;
+        }
+        double target = 0, done = 0;
+        int completed = 0;
+        vector<string> subjects;
+        vector<double> subjectHours;
+        for (TaskNode *p = head; p; p = p->next)
+        {
+            const Task &t = p->data;
+            target += t.targetHours;
+            done += t.hoursDone;
+            if (t.completed)
+                completed++;
+            size_t i = 0;
+            while (i < subjects.size() && subjects[i] != t.subject)
+                i++;
+            if (i == subjects.size())
+            {
+                subjects.push_back(t.subject);
+                subjectHours.push_back(0);
+            }
+            subjectHours[i] += t.hoursDone;
+        }
+        cout << fixed << setprecision(1)
+             << "\nCompleted tasks: " << completed << "/" << count << "\n"
+             << "Hours studied  : " << done << " of " << target << " target hrs\n"
+             << "Hours by subject:\n";
+        for (size_t i = 0; i < subjects.size(); i++)
+            cout << "  " << left << setw(16) << subjects[i] << subjectHours[i] << " hrs\n";
+        cout.unsetf(ios::fixed);
+    }
+
+    void showQueue()
+    {
+        if (pendingQueue.empty())
+        {
+            cout << "Pending queue is empty.\n";
+            return;
+        }
+        queue<int> copy = pendingQueue;
+        bool any = false;
+        while (!copy.empty())
+        {
+            Task *t = findTask(copy.front());
+            copy.pop();
+            if (!t || t->completed)
+                continue;
+            if (!any)
+            {
+                printHeader();
+                any = true;
+            }
+            printTask(*t);
+        }
+        if (!any)
+            cout << "Pending queue is empty.\n";
+    }
+
+    void processNextTask()
+    {
+        while (!pendingQueue.empty())
+        {
+            int id = pendingQueue.front();
+            pendingQueue.pop();
+            Task *t = findTask(id);
+            if (!t || t->completed)
+                continue;
+            cout << "Next task in queue:\n";
+            printHeader();
+            printTask(*t);
+            string ans = readText("Log study hours for it now? (y/n): ");
+            if (ans == "y" || ans == "Y")
+            {
+                t->hoursDone += readNumber("Hours studied: ", 0.1, 24);
+                if (t->hoursDone >= t->targetHours)
+                {
+                    t->completed = true;
+                    cout << "Target reached - task marked complete.\n";
+                    saveToFile();
+                    return;
+                }
+                pendingQueue.push(t->id);
+                saveToFile();
+            }
+            else
+            {
+                pendingQueue.push(t->id);
+            }
+            return;
+        }
+        cout << "No pending tasks in the queue.\n";
+    }
+
+    void menu()
+    {
+        while (true)
+        {
+            cout << "\n===== STUDY PLANNER =====\n"
+                 << "1. Add daily task\n"
+                 << "2. Add weekly task\n"
+                 << "3. View daily tasks\n"
+                 << "4. View weekly tasks\n"
+                 << "5. View all tasks\n"
+                 << "6. Mark task complete\n"
+                 << "7. Log study hours\n"
+                 << "8. Study hours report\n"
+                 << "9. View tasks sorted\n"
+                 << "10. Show pending queue\n"
+                 << "11. Process next task from queue\n"
+                 << "0. Back\n";
+            switch ((int)readNumber("Choice: ", 0, 11))
+            {
+            case 1:
+                addTask("Daily");
+                break;
+            case 2:
+                addTask("Weekly");
+                break;
+            case 3:
+                viewTasks("Daily");
+                break;
+            case 4:
+                viewTasks("Weekly");
+                break;
+            case 5:
+                viewTasks("All");
+                break;
+            case 6:
+                markComplete();
+                break;
+            case 7:
+                logStudyHours();
+                break;
+            case 8:
+                studyReport();
+                break;
+            case 9:
+                viewSorted();
+                break;
+            case 10:
+                showQueue();
+                break;
+            case 11:
+                processNextTask();
                 break;
             case 0:
                 return;
