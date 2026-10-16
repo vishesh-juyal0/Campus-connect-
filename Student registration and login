@@ -1,0 +1,286 @@
+// Student registration and login code 
+
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+class Student
+{
+public:
+    string id, name, rollNo, section, email, phone, password;
+    int semester;
+    float cgpa;
+};
+
+class StudentManager
+{
+    static const int SIZE = 101;
+    vector<Student> table[SIZE];
+    vector<string> ids;
+
+    int hashFunction(string id)
+    {
+        int hash = 0;
+
+        for (char c : id)
+            hash = (hash * 31 + c) % SIZE;
+
+        return hash;
+    }
+
+    Student* findStudent(string id)
+    {
+        int index = hashFunction(id);
+
+        for (auto &s : table[index])
+        {
+            if (s.id == id)
+                return &s;
+        }
+
+        return nullptr;
+    }
+
+    void insertStudent(Student s)
+    {
+        int index = hashFunction(s.id);
+
+        table[index].push_back(s);
+        ids.push_back(s.id);
+
+        sort(ids.begin(), ids.end());
+    }
+
+    bool binarySearch(string id)
+    {
+        int low = 0, high = ids.size() - 1;
+
+        while (low <= high)
+        {
+            int mid = low + (high - low) / 2;
+
+            if (ids[mid] == id)
+                return true;
+
+            if (ids[mid] < id)
+                low = mid + 1;
+            else
+                high = mid - 1;
+        }
+
+        return false;
+    }
+
+    void saveStudent(Student s)
+    {
+        ofstream file("students.txt", ios::app);
+
+        file << s.id << "|"
+             << s.name << "|"
+             << s.rollNo << "|"
+             << s.section << "|"
+             << s.semester << "|"
+             << s.cgpa << "|"
+             << s.email << "|"
+             << s.phone << "|"
+             << s.password << "\n";
+
+        file.close();
+    }
+
+    void loadStudents()
+    {
+        ifstream file("students.txt");
+        Student s;
+
+        while (file >> s.id)
+        {
+            file.ignore();
+
+            getline(file, s.name, '|');
+            getline(file, s.rollNo, '|');
+            getline(file, s.section, '|');
+
+            file >> s.semester;
+            file.ignore();
+
+            file >> s.cgpa;
+            file.ignore();
+
+            getline(file, s.email, '|');
+            getline(file, s.phone, '|');
+            getline(file, s.password);
+
+            if (findStudent(s.id) == nullptr)
+                insertStudent(s);
+        }
+
+        file.close();
+    }
+
+public:
+    StudentManager()
+    {
+        loadStudents();
+    }
+
+    void registerStudent()
+    {
+        Student s;
+
+        cout << "\nEnter Student ID: ";
+        getline(cin, s.id);
+
+        if (findStudent(s.id) != nullptr)
+        {
+            cout << "Student ID already exists!\n";
+            return;
+        }
+
+        cout << "Enter Full Name: ";
+        getline(cin, s.name);
+
+        cout << "Enter Roll Number: ";
+        getline(cin, s.rollNo);
+
+        cout << "Enter Section: ";
+        getline(cin, s.section);
+
+        cout << "Enter Semester: ";
+        cin >> s.semester;
+
+        cout << "Enter CGPA: ";
+        cin >> s.cgpa;
+        cin.ignore();
+
+        cout << "Enter Email: ";
+        getline(cin, s.email);
+
+        cout << "Enter Phone: ";
+        getline(cin, s.phone);
+
+        cout << "Create Password: ";
+        getline(cin, s.password);
+
+        saveStudent(s);
+        insertStudent(s);
+
+        cout << "\nRegistration Successful!\n";
+    }
+
+    bool login(string &loggedInID)
+    {
+        string id, password;
+
+        cout << "\nEnter Student ID: ";
+        getline(cin, id);
+
+        if (!binarySearch(id))
+    
+        {
+            cout << "Student ID not found!\n";
+            return false;
+        }
+
+        Student *s = findStudent(id);
+
+        cout << "Enter Password: ";
+        getline(cin, password);
+
+        if (s != nullptr && s->password == password)
+        {
+            loggedInID = s->id;
+            cout << "\nLogin Successful! Welcome, "
+                 << s->name << "!\n";
+            return true;
+        }
+
+        cout << "Incorrect Password!\n";
+        return false;
+    }
+
+    void displayProfile(string id)
+    {
+        Student *s = findStudent(id);
+
+        if (s == nullptr)
+        {
+            cout << "Profile not found!\n";
+            return;
+        }
+
+        cout << "\n--- STUDENT PROFILE ---\n";
+        cout << "Student ID : " << s->id << "\n";
+        cout << "Name       : " << s->name << "\n";
+        cout << "Roll No    : " << s->rollNo << "\n";
+        cout << "Section    : " << s->section << "\n";
+        cout << "Semester   : " << s->semester << "\n";
+        cout << "CGPA       : " << s->cgpa << "\n";
+        cout << "Email      : " << s->email << "\n";
+        cout << "Phone      : " << s->phone << "\n";
+    }
+};
+
+int main()
+{
+    StudentManager manager;
+    string loggedInID;
+    int choice;
+
+    do
+    {
+        cout << "\n===== CAMPUSCONNECT =====\n";
+        cout << "1. Register\n";
+        cout << "2. Login\n";
+        cout << "3. Exit\n";
+        cout << "Enter choice: ";
+
+        cin >> choice;
+        cin.ignore();
+
+        switch (choice)
+        {
+            case 1:
+                manager.registerStudent();
+                break;
+
+            case 2:
+                if (manager.login(loggedInID))
+                {
+                    int option;
+
+                    do
+                    {
+                        cout << "\n1. View Profile\n";
+                        cout << "2. Logout\n";
+                        cout << "Enter choice: ";
+
+                        cin >> option;
+                        cin.ignore();
+
+                        if (option == 1)
+                            manager.displayProfile(loggedInID);
+                        else if (option == 2)
+                            cout << "Logged Out!\n";
+                        else
+                            cout << "Invalid Choice!\n";
+
+                    } while (option != 2);
+                }
+                break;
+
+            case 3:
+                cout << "Thank you for using CampusConnect!\n";
+                break;
+
+            default:
+                cout << "Invalid Choice!\n";
+        }
+
+    } while (choice != 3);
+
+    return 0;
+}
