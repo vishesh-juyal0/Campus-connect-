@@ -297,7 +297,8 @@ class RecentStack
 {
     static const int CAPACITY = 5;
     int arr[CAPACITY];
-    int top; // index of top element, -1 when empty
+    int top;
+
 public:
     RecentStack() : top(-1) {}
     bool isEmpty() const { return top == -1; }
@@ -305,7 +306,7 @@ public:
 
     void push(int tipId)
     {
-        // if already in stack, remove it so it moves to the top (no duplicates)
+
         for (int i = 0; i <= top; i++)
             if (arr[i] == tipId)
             {
@@ -314,7 +315,7 @@ public:
                 top--;
                 break;
             }
-        // if full, drop the oldest (bottom) element
+
         if (isFull())
         {
             for (int j = 0; j < top; j++)
@@ -333,7 +334,7 @@ public:
     }
 
     int size() const { return top + 1; }
-    int peekAt(int fromTop) const { return arr[top - fromTop]; } // 0 = top
+    int peekAt(int fromTop) const { return arr[top - fromTop]; }
 };
 
 struct Tip
