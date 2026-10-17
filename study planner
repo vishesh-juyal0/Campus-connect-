@@ -1,430 +1,504 @@
 #include <iostream>
 #include <fstream>
-#include <sstream>
 #include <vector>
 #include <string>
+#include <limits>
+#include <iomanip>
 #include <cctype>
+#include <sstream>
 using namespace std;
 
-string toLowerCase(string s)
+string lowerText(string s)
 {
-    for (int i = 0; i < (int)s.length(); i++)
+    for (int i = 0; i < (int)s.size(); i++)
         s[i] = (char)tolower((unsigned char)s[i]);
     return s;
 }
 
 string readText(string message)
 {
-    string value;
+    string s;
     cout << message;
-    getline(cin >> ws, value);
-    return value;
+    getline(cin >> ws, s);
+    return s;
 }
 
 int readNumber(string message, int low, int high)
 {
-    int number;
-
+    int n;
     while (true)
     {
         cout << message;
-        if (cin >> number && number >= low && number <= high)
+        if (cin >> n && n >= low && n <= high)
         {
-            cin.ignore(10000, '\n');
-            return number;
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            return n;
         }
-
-        cout << "Invalid input. Enter a number from "
-             << low << " to " << high << ".\n";
+        cout << "Invalid input. Try again.\n";
         cin.clear();
-        cin.ignore(10000, '\n');
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
     }
 }
 
-struct Tip
+double readHours(string message)
+{
+    double h;
+    while (true)
+    {
+        cout << message;
+        if (cin >> h && h >= 0)
+        {
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            return h;
+        }
+        cout << "Enter a non-negative number.\n";
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    }
+}
+
+bool validDate(string date)
+{
+    // Basic YYYY-MM-DD format and range checking.
+    if (date.size() != 10 || date[4] != '-' || date[7] != '-')
+        return false;
+
+    for (int i = 0; i < 10; i++)
+    {
+        if (i == 4 || i == 7)
+            continue;
+        if (!isdigit((unsigned char)date[i]))
+            return false;
+    }
+
+    int month = stoi(date.substr(5, 2));
+    int day = stoi(date.substr(8, 2));
+
+    if (month < 1 || month > 12 || day < 1 || day > 31)
+        return false;
+
+    return true;
+}
+
+struct Task
 {
     int id;
+    string type;       // Daily or Weekly
     string subject;
-    string category;
-    string keywords;
-    string text;
+    string topic;
+    string date;       // YYYY-MM-DD
+    double targetHours;
+    double hoursDone;
+    bool completed;
 };
 
-class RecentStack
+class StudyPlanner
 {
 private:
-    vector<int> ids;
-    int capacity;
-
-public:
-    RecentStack()
-    {
-        capacity = 5;
-    }
-
-    bool isEmpty()
-    {
-        return ids.empty();
-    }
-
-    void push(int id)
-    {
-        for (int i = 0; i < (int)ids.size(); i++)
-        {
-            if (ids[i] == id)
-            {
-                ids.erase(ids.begin() + i);
-                break;
-            }
-        }
-
-        if ((int)ids.size() == capacity)
-            ids.erase(ids.begin());
-
-        ids.push_back(id);
-    }
-
-    bool pop(int &id)
-    {
-        if (ids.empty())
-            return false;
-
-        id = ids.back();
-        ids.pop_back();
-        return true;
-    }
-
-    bool peek(int &id)
-    {
-        if (ids.empty())
-            return false;
-
-        id = ids.back();
-        return true;
-    }
-
-    void display()
-    {
-        for (int i = (int)ids.size() - 1; i >= 0; i--)
-        {
-            cout << ids[i] << "\n";
-        }
-    }
-};
-
-class StudyTips
-{
-private:
-    vector<Tip> tips;
-    RecentStack recent;
+    vector<Task> tasks;
+    vector<int> pending;
+    int nextID;
     string fileName;
 
-    void printTip(Tip t)
+    int findIndex(int id)
     {
-        cout << "\n[" << t.id << "] "
-             << "(" << t.subject << " - " << t.category << ")\n";
-        cout << t.text << "\n";
-    }
-
-    int findTipIndex(int id)
-    {
-        for (int i = 0; i < (int)tips.size(); i++)
-        {
-            if (tips[i].id == id)
+        for (int i = 0; i < (int)tasks.size(); i++)
+            if (tasks[i].id == id)
                 return i;
-        }
         return -1;
     }
 
-    string normalizeSubject(string subject)
+    void saveToFile()
     {
-        subject = toLowerCase(subject);
+        ofstream out(fileName);
+        if (!out)
+        {
+            cout << "Could not save tasks to file.\n";
+            return;
+        }
 
-        if (subject.find("dsa") != string::npos ||
-            subject.find("data struct") != string::npos ||
-            subject == "ds")
-            return "dsa";
-
-        if (subject.find("oop") != string::npos ||
-            subject.find("c++") != string::npos ||
-            subject.find("cpp") != string::npos ||
-            subject.find("object") != string::npos)
-            return "oop";
-
-        return subject;
-    }
-
-    void printNoTips(string message)
-    {
-        cout << message << "\n";
-    }
-
-public:
-    StudyTips(string file = "tips.txt")
-    {
-        fileName = file;
-        loadFromFile();
+        for (int i = 0; i < (int)tasks.size(); i++)
+        {
+            out << tasks[i].id << '|'
+                << tasks[i].type << '|'
+                << tasks[i].subject << '|'
+                << tasks[i].topic << '|'
+                << tasks[i].date << '|'
+                << tasks[i].targetHours << '|'
+                << tasks[i].hoursDone << '|'
+                << tasks[i].completed << '\n';
+        }
+        out.close();
     }
 
     void loadFromFile()
     {
-        tips.clear();
-        ifstream input(fileName);
+        tasks.clear();
+        pending.clear();
+        nextID = 1;
 
-        if (!input)
-        {
-            cout << "Warning: Could not open " << fileName << ".\n";
-            cout << "Create the file and add tips in the required format.\n";
-            return;
-        }
+        ifstream in(fileName);
+        if (!in)
+            return; // The file will be created when tasks are saved.
 
         string line;
-
-        while (getline(input, line))
+        while (getline(in, line))
         {
-            string fields[5];
-            stringstream ss(line);
-            bool valid = true;
-
-            for (int i = 0; i < 5; i++)
+            string fields[8];
+            // Split the record using the pipe character.
+            int field = 0;
+            string value;
+            for (int i = 0; i <= (int)line.size(); i++)
             {
-                if (!getline(ss, fields[i], '|'))
+                if (i == (int)line.size() || line[i] == '|')
                 {
-                    valid = false;
-                    break;
+                    if (field < 8)
+                        fields[field] = value;
+                    field++;
+                    value.clear();
                 }
+                else
+                    value += line[i];
             }
 
-            if (!valid || fields[4].empty())
+            if (field < 8)
                 continue;
 
             try
             {
-                Tip t;
+                Task t;
                 t.id = stoi(fields[0]);
-                t.subject = fields[1];
-                t.category = fields[2];
-                t.keywords = toLowerCase(fields[3]);
-                t.text = fields[4];
-                tips.push_back(t);
+                t.type = fields[1];
+                t.subject = fields[2];
+                t.topic = fields[3];
+                t.date = fields[4];
+                t.targetHours = stod(fields[5]);
+                t.hoursDone = stod(fields[6]);
+                t.completed = (fields[7] == "1");
+
+                tasks.push_back(t);
+                if (!t.completed)
+                    pending.push_back(t.id);
+
+                if (t.id >= nextID)
+                    nextID = t.id + 1;
             }
             catch (...)
             {
-                cout << "Skipping an invalid line in the tips file.\n";
+                cout << "Skipping invalid task record.\n";
             }
         }
+        in.close();
+    }
 
-        input.close();
+    void printTask(const Task &t)
+    {
+        cout << "\nID: " << t.id << "\n";
+        cout << "Type: " << t.type << "\n";
+        cout << "Subject: " << t.subject << "\n";
+        cout << "Topic: " << t.topic << "\n";
+        cout << "Date: " << t.date << "\n";
+        cout << "Target hours: " << t.targetHours << "\n";
+        cout << "Hours completed: " << t.hoursDone << "\n";
+        cout << "Hours remaining: "
+             << (t.targetHours > t.hoursDone ? t.targetHours - t.hoursDone : 0)
+             << "\n";
+        cout << "Status: " << (t.completed ? "Completed" : "Pending") << "\n";
+    }
+
+    void addTask(string type)
+    {
+        Task t;
+        t.id = nextID++;
+        t.type = type;
+        t.subject = readText("Enter subject: ");
+        t.topic = readText("Enter topic: ");
+
+        do
+        {
+            t.date = readText("Enter date (YYYY-MM-DD): ");
+            if (!validDate(t.date))
+                cout << "Invalid date format or range.\n";
+        } while (!validDate(t.date));
+
+        t.targetHours = readHours("Enter target study hours: ");
+        t.hoursDone = 0;
+        t.completed = false;
+
+        tasks.push_back(t);
+        pending.push_back(t.id);
+        saveToFile();
+
+        cout << "Task added. ID: " << t.id << "\n";
+    }
+
+    void removePendingID(int id)
+    {
+        for (int i = 0; i < (int)pending.size(); i++)
+        {
+            if (pending[i] == id)
+            {
+                pending.erase(pending.begin() + i);
+                return;
+            }
+        }
+    }
+
+    void finishTask(Task &t)
+    {
+        t.completed = true;
+        removePendingID(t.id);
+        saveToFile();
+        cout << "Task marked as completed.\n";
+    }
+
+public:
+    StudyPlanner(string file = "study_tasks.txt")
+    {
+        fileName = file;
+        nextID = 1;
+        loadFromFile();
     }
 
     void displayAll()
     {
-        if (tips.empty())
+        if (tasks.empty())
         {
-            printNoTips("No tips available.");
+            cout << "No tasks available.\n";
             return;
         }
 
-        for (int i = 0; i < (int)tips.size(); i++)
-            printTip(tips[i]);
+        for (int i = 0; i < (int)tasks.size(); i++)
+            printTask(tasks[i]);
     }
 
-    void filterBySubject()
+    void displayByType()
     {
-        vector<string> subjects;
+        cout << "1. Daily tasks\n2. Weekly tasks\n";
+        int choice = readNumber("Choose: ", 1, 2);
+        string type = (choice == 1 ? "Daily" : "Weekly");
+        bool found = false;
 
-        for (int i = 0; i < (int)tips.size(); i++)
+        for (int i = 0; i < (int)tasks.size(); i++)
         {
-            bool found = false;
-
-            for (int j = 0; j < (int)subjects.size(); j++)
+            if (tasks[i].type == type)
             {
-                if (subjects[j] == tips[i].subject)
+                printTask(tasks[i]);
+                found = true;
+            }
+        }
+
+        if (!found)
+            cout << "No tasks of this type.\n";
+    }
+
+    void addDailyTask()
+    {
+        addTask("Daily");
+    }
+
+    void addWeeklyTask()
+    {
+        addTask("Weekly");
+    }
+
+    void sortTasks()
+    {
+        if (tasks.empty())
+        {
+            cout << "No tasks available.\n";
+            return;
+        }
+
+        cout << "Sort by:\n1. Date\n2. Hours remaining\n3. Subject\n";
+        int choice = readNumber("Choose: ", 1, 3)
+        for (int i = 0; i < (int)tasks.size() - 1; i++)
+        {
+            for (int j = 0; j < (int)tasks.size() - i - 1; j++)
+            {
+                bool swapNeeded = false;
+
+                if (choice == 1 && tasks[j].date > tasks[j + 1].date)
+                    swapNeeded = true;
+                else if (choice == 2)
                 {
-                    found = true;
-                    break;
+                    double left = tasks[j].targetHours - tasks[j].hoursDone;
+                    double right = tasks[j + 1].targetHours - tasks[j + 1].hoursDone;
+                    if (left > right)
+                        swapNeeded = true;
+                }
+                else if (choice == 3 &&
+                         lowerText(tasks[j].subject) >
+                         lowerText(tasks[j + 1].subject))
+                    swapNeeded = true;
+
+                if (swapNeeded)
+                {
+                    Task temp = tasks[j];
+                    tasks[j] = tasks[j + 1];
+                    tasks[j + 1] = temp;
                 }
             }
-
-            if (!found)
-                subjects.push_back(tips[i].subject);
         }
 
-        if (subjects.empty())
-        {
-            cout << "No tips available.\n";
-            return;
-        }
-
-        cout << "\nSubjects:\n";
-        for (int i = 0; i < (int)subjects.size(); i++)
-            cout << i + 1 << ". " << subjects[i] << "\n";
-
-        int choice = readNumber("Choose subject: ", 1, (int)subjects.size());
-        string selected = subjects[choice - 1];
-        bool found = false;
-
-        for (int i = 0; i < (int)tips.size(); i++)
-        {
-            if (tips[i].subject == selected)
-            {
-                printTip(tips[i]);
-                found = true;
-            }
-        }
-
-        if (!found)
-            cout << "No tips for this subject.\n";
+        displayAll();
     }
 
-    void filterByCategory()
+    void markCompleted()
     {
-        string categories[4] = {
-            "Concept", "Practice", "Revision", "Productivity"
-        };
-
-        cout << "\nCategories:\n";
-        for (int i = 0; i < 4; i++)
-            cout << i + 1 << ". " << categories[i] << "\n";
-
-        int choice = readNumber("Choose category: ", 1, 4);
-        string selected = categories[choice - 1];
-        bool found = false;
-
-        for (int i = 0; i < (int)tips.size(); i++)
-        {
-            if (tips[i].category == selected)
-            {
-                printTip(tips[i]);
-                found = true;
-            }
-        }
-
-        if (!found)
-            cout << "No tips in this category.\n";
-    }
-
-    void searchByKeyword()
-    {
-        string keyword = toLowerCase(readText("Enter a keyword: "));
-        bool found = false;
-
-        for (int i = 0; i < (int)tips.size(); i++)
-        {
-            string allKeywords = toLowerCase(tips[i].keywords);
-            string tipText = toLowerCase(tips[i].text);
-
-            if (allKeywords.find(keyword) != string::npos ||
-                tipText.find(keyword) != string::npos)
-            {
-                printTip(tips[i]);
-                found = true;
-            }
-        }
-
-        if (!found)
-            cout << "No tips found for that keyword.\n";
-    }
-
-    void viewTip()
-    {
-        int id = readNumber("Enter tip ID: ", 1, 100000);
-        int index = findTipIndex(id);
+        int id = readNumber("Enter task ID to mark completed: ", 1, 1000000);
+        int index = findIndex(id);
 
         if (index == -1)
         {
-            cout << "Tip not found.\n";
+            cout << "Task not found.\n";
             return;
         }
 
-        printTip(tips[index]);
-        recent.push(id);
+        finishTask(tasks[index]);
     }
 
-    void showRecent()
+    void logHours()
     {
-        if (recent.isEmpty())
+        int id = readNumber("Enter task ID: ", 1, 1000000);
+        int index = findIndex(id);
+
+        if (index == -1)
         {
-            cout << "No recently viewed tips.\n";
+            cout << "Task not found.\n";
             return;
         }
 
-        cout << "\nRecently viewed (latest first):\n";
-        recent.display();
+        Task &t = tasks[index];
+
+        if (t.completed)
+        {
+            cout << "This task is already completed.\n";
+            return;
+        }
+
+        double hours = readHours("Enter hours studied now: ");
+        t.hoursDone += hours;
+
+        if (t.hoursDone >= t.targetHours)
+            finishTask(t);
+        else
+            saveToFile();
+
+        cout << "Updated hours: " << t.hoursDone << "\n";
     }
 
-    void goBack()
+    void showReport()
     {
-        int removedID;
+        double totalTarget = 0;
+        double totalDone = 0;
+        int completedCount = 0;
 
-        if (!recent.pop(removedID))
+        for (int i = 0; i < (int)tasks.size(); i++)
         {
-            cout << "No recent tip history.\n";
+            totalTarget += tasks[i].targetHours;
+            totalDone += tasks[i].hoursDone;
+            if (tasks[i].completed)
+                completedCount++;
+        }
+
+        cout << "\n========== STUDY REPORT ==========\n";
+        cout << "Total tasks: " << tasks.size() << "\n";
+        cout << "Completed tasks: " << completedCount << "\n";
+        cout << "Pending tasks: " << tasks.size() - completedCount << "\n";
+        cout << fixed << setprecision(2);
+        cout << "Target hours: " << totalTarget << "\n";
+        cout << "Hours studied: " << totalDone << "\n";
+        cout << "Hours remaining: "
+             << (totalTarget > totalDone ? totalTarget - totalDone : 0)
+             << "\n";
+    }
+
+    void showPendingQueue()
+    {
+        if (pending.empty())
+        {
+            cout << "No pending tasks in the queue.\n";
             return;
         }
 
-        int previousID;
+        cout << "Pending task IDs (next task first):\n";
+        for (int i = 0; i < (int)pending.size(); i++)
+            cout << pending[i] << "\n";
+    }
 
-        if (!recent.peek(previousID))
+    void processNextTask()
+    {
+        while (!pending.empty())
         {
-            cout << "No earlier tip.\n";
+            int id = pending.front();
+            pending.erase(pending.begin());
+
+            int index = findIndex(id);
+            if (index == -1 || tasks[index].completed)
+                continue;
+
+            Task &t = tasks[index];
+            printTask(t);
+
+            double hours = readHours("Enter hours studied in this session: ");
+            t.hoursDone += hours;
+
+            if (t.hoursDone >= t.targetHours)
+            {
+                t.completed = true;
+                cout << "Target reached. Task completed.\n";
+            }
+            else
+            {
+                pending.push_back(t.id);
+                cout << "Task is still pending and moved to the end of the queue.\n";
+            }
+
+            saveToFile();
             return;
         }
 
-        int index = findTipIndex(previousID);
-        if (index != -1)
-        {
-            cout << "Previous tip:\n";
-            printTip(tips[index]);
-        }
+        cout << "No pending tasks to process.\n";
     }
 
     void menu()
     {
         while (true)
         {
-            cout << "\n===== STUDY TIPS (" << tips.size()
-                 << " loaded) =====\n";
-            cout << "1. Display all tips\n";
-            cout << "2. Filter by subject\n";
-            cout << "3. Filter by category\n";
-            cout << "4. Search by keyword\n";
-            cout << "5. Open tip by ID\n";
-            cout << "6. Recently viewed tips\n";
-            cout << "7. Go back to previous tip\n";
-            cout << "8. Reload tips from file\n";
-            cout << "0. Back\n";
+            cout << "\n========== STUDY PLANNER ==========\n";
+            cout << "1. Add daily task\n";
+            cout << "2. Add weekly task\n";
+            cout << "3. Display all tasks\n";
+            cout << "4. Display tasks by type\n";
+            cout << "5. Sort tasks\n";
+            cout << "6. Mark task completed\n";
+            cout << "7. Log study hours\n";
+            cout << "8. Study report\n";
+            cout << "9. Show pending queue\n";
+            cout << "10. Process next task\n";
+            cout << "0. Exit planner\n";
 
-            int choice = readNumber("Choice: ", 0, 8);
+            int choice = readNumber("Enter choice: ", 0, 10);
 
-            if (choice == 1)
-                displayAll();
-            else if (choice == 2)
-                filterBySubject();
-            else if (choice == 3)
-                filterByCategory();
-            else if (choice == 4)
-                searchByKeyword();
-            else if (choice == 5)
-                viewTip();
-            else if (choice == 6)
-                showRecent();
-            else if (choice == 7)
-                goBack();
-            else if (choice == 8)
-            {
-                loadFromFile();
-                cout << tips.size() << " tips loaded.\n";
-            }
-            else
-                return;
+            if (choice == 1) addDailyTask();
+            else if (choice == 2) addWeeklyTask();
+            else if (choice == 3) displayAll();
+            else if (choice == 4) displayByType();
+            else if (choice == 5) sortTasks();
+            else if (choice == 6) markCompleted();
+            else if (choice == 7) logHours();
+            else if (choice == 8) showReport();
+            else if (choice == 9) showPendingQueue();
+            else if (choice == 10) processNextTask();
+            else return;
         }
     }
 };
 
 int main()
 {
-    StudyTips tips("tips.txt");
-    tips.menu();
+    StudyPlanner planner("study_tasks.txt");
+    planner.menu();
     return 0;
 }
