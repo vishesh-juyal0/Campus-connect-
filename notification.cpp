@@ -8,7 +8,6 @@ using namespace std;
 
 
 
-//Notification structure
 struct Notification
 {
     int id;
@@ -21,7 +20,6 @@ struct Notification
 
 
 
-// priority Queue comparator
 struct compare
 {
     bool operator()(Notification a,Notification b)
@@ -31,7 +29,6 @@ struct compare
 };
 
 
-// DSA data structure
 priority_queue<Notification,
 vector< Notification>,compare>
     notifications;
@@ -43,7 +40,6 @@ set<string> categories;
 
 
 
-   //Add notification  
 void addNotification(int id ,string message, string category,int priority)
 {
     Notification n = {id, message, 
@@ -57,7 +53,6 @@ void addNotification(int id ,string message, string category,int priority)
 
 
 
-// Notification system
     void notification ()
     {
         addNotification(101, "C++ Internship deadline in 3 days", "Internship",2);
@@ -77,7 +72,6 @@ void addNotification(int id ,string message, string category,int priority)
 
 
 
-// Skill Recommendation 
 void recommendation()
 {
     string skill;
@@ -118,7 +112,6 @@ void recommendation()
 
 
 
-// Interest Recommendation
 void interestRecommendation()
 {
     string interest;
@@ -152,7 +145,6 @@ void interestRecommendation()
 
 
 
-//Attendence Reminder
 void attendanceReminder()
 {
     int total,attended;
@@ -188,7 +180,6 @@ void attendanceReminder()
 
 
 
-//C0llege programs
 void collegeProgram()
 {
     cout<< "\n---College  Programs ----\n"<<endl;
@@ -204,7 +195,6 @@ void collegeProgram()
 
 
 
-// Opportuities structure 
 struct opportunity
 {
     string title;
@@ -213,7 +203,6 @@ struct opportunity
 
 
 
-//opportunities stored in vector
 vector<opportunity> opportunities =
 {
     {"C++ Intership", "C++"},
@@ -225,7 +214,6 @@ vector<opportunity> opportunities =
 
 
 
-// search opportunities (Linear search)
 void searchOpportunity()
 {
     string skill;
@@ -246,7 +234,6 @@ void searchOpportunity()
 }
 
 
-//Search Notification using Hasing
 void searchNotification()
 {
     int id;
@@ -269,7 +256,6 @@ void searchNotification()
 
 
 
-// show unique categories using set
 
 void ShowCategories()
 {
