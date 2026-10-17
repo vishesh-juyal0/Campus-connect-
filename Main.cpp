@@ -2,12 +2,10 @@
 #include <fstream>
 #include <sstream>
 #include <string>
-#include <vector>
-#include <queue>
-#include <algorithm>
 #include <iomanip>
 #include <cstdlib>
 using namespace std;
+
 string readText(const string &msg)
 {
     string s;
@@ -22,13 +20,12 @@ string readText(const string &msg)
     } while (s.empty());
     return s;
 }
-
+ 
 double readNumber(const string &msg, double lo, double hi)
 {
     while (true)
     {
-        string s = readText(msg);
-        stringstream ss(s);
+        stringstream ss(readText(msg));
         double v;
         char extra;
         if (ss >> v && !(ss >> extra) && v >= lo && v <= hi)
@@ -36,338 +33,355 @@ double readNumber(const string &msg, double lo, double hi)
         cout << "Enter a value between " << lo << " and " << hi << ".\n";
     }
 }
-
+ 
 string toLower(string s)
 {
     for (char &c : s)
         c = tolower((unsigned char)c);
     return s;
 }
-
-// harsh verma work
-class Opportunity
+ 
+template <class T>
+class List
 {
-public:
-    int id;
-    string title, type, deadline, skill;
-
-    void input()
+    struct Node
     {
-        cout << "Enter Opportunity ID: ";
-        cin >> id;
-
-        cout << "Enter Title: ";
-        getline(cin >> ws, title);
-
-        cout << "Enter Type (Job/Internship/Hackathon/Quiz): ";
-        cin >> type;
-
-        cout << "Enter Required Skill: ";
-        getline(cin >> ws, skill);
-
-        cout << "Enter Deadline (YYYYMMDD): ";
-        cin >> deadline;
+        T data;
+        Node *next;
+        Node(const T &d) : data(d), next(nullptr) {}
+    };
+    Node *head = nullptr, *tail = nullptr;
+    int n = 0;
+ 
+    template <class F>
+    static Node *mergeSort(Node *h, F less)
+    {
+        if (!h || !h->next)
+            return h;
+        Node *slow = h, *fast = h->next;
+        while (fast && fast->next)
+        {
+            slow = slow->next;
+            fast = fast->next->next;
+        }
+        Node *b = slow->next;
+        slow->next = nullptr;
+        Node *a = mergeSort(h, less);
+        b = mergeSort(b, less);
+        Node *res = nullptr, **t = &res;
+        while (a && b)
+        {
+            Node *&pick = less(b->data, a->data) ? b : a;
+            *t = pick;
+            pick = pick->next;
+            t = &(*t)->next;
+        }
+        *t = a ? a : b;
+        return res;
     }
-
-    void display()
+ 
+public:
+    List() {}
+    List(const List &) = delete;
+    List &operator=(const List &) = delete;
+    ~List() { clear(); }
+ 
+    int size() const { return n; }
+    bool empty() const { return n == 0; }
+ 
+    void push_back(const T &d)
     {
-        cout << "\nOpportunity ID: " << id;
-        cout << "\nTitle: " << title;
-        cout << "\nType: " << type;
-        cout << "\nRequired Skill: " << skill;
-        cout << "\nDeadline: " << deadline << "\n";
+        Node *x = new Node(d);
+        if (tail)
+            tail->next = x;
+        else
+            head = x;
+        tail = x;
+        n++;
+    }
+    void push_front(const T &d)
+    {
+        Node *x = new Node(d);
+        x->next = head;
+        head = x;
+        if (!tail)
+            tail = x;
+        n++;
+    }
+    bool pop_front(T &out)
+    {
+        if (!head)
+            return false;
+        Node *x = head;
+        out = x->data;
+        head = x->next;
+        if (!head)
+            tail = nullptr;
+        delete x;
+        n--;
+        return true;
+    }
+    bool pop_back(T &out)
+    {
+        if (!head)
+            return false;
+        out = tail->data;
+        if (head == tail)
+        {
+            delete head;
+            head = tail = nullptr;
+        }
+        else
+        {
+            Node *p = head;
+            while (p->next != tail)
+                p = p->next;
+            delete tail;
+            tail = p;
+            p->next = nullptr;
+        }
+        n--;
+        return true;
+    }
+    bool front(T &out) const
+    {
+        if (!head)
+            return false;
+        out = head->data;
+        return true;
+    }
+    void clear()
+    {
+        T tmp;
+        while (pop_front(tmp))
+        {
+        }
+    }
+    const T &at(int i) const
+    {
+        Node *p = head;
+        while (i-- > 0)
+            p = p->next;
+        return p->data;
+    }
+    template <class F>
+    T *find(F pred)
+    {
+        for (Node *p = head; p; p = p->next)
+            if (pred(p->data))
+                return &p->data;
+        return nullptr;
+    }
+    template <class F>
+    bool removeIf(F pred) // removes first match
+    {
+        Node *prev = nullptr;
+        for (Node *p = head; p; prev = p, p = p->next)
+            if (pred(p->data))
+            {
+                (prev ? prev->next : head) = p->next;
+                if (p == tail)
+                    tail = prev;
+                delete p;
+                n--;
+                return true;
+            }
+        return false;
+    }
+    template <class F>
+    void each(F f) const
+    {
+        for (Node *p = head; p; p = p->next)
+            f(p->data);
+    }
+    template <class F>
+    void sort(F less) 
+    {
+        head = mergeSort(head, less);
+        tail = head;
+        while (tail && tail->next)
+            tail = tail->next;
     }
 };
-
+ 
+struct Opportunity
+{
+    int id = 0;
+    string title, type, skill, deadline;
+ 
+    void input()
+    {
+        id = (int)readNumber("Opportunity ID: ", 1, 1000000);
+        title = readText("Title: ");
+        type = readText("Type (Job/Internship/Hackathon/Quiz): ");
+        skill = readText("Required Skill: ");
+        deadline = readText("Deadline (YYYYMMDD): ");
+    }
+    void display() const
+    {
+        cout << "\nOpportunity ID: " << id << "\nTitle: " << title << "\nType: " << type
+             << "\nRequired Skill: " << skill << "\nDeadline: " << deadline << "\n";
+    }
+};
+ 
 class OpportunityHub
 {
-    vector<Opportunity> opportunities;
-
+    List<Opportunity> list;
+ 
+    Opportunity *byId(const string &msg)
+    {
+        int id = (int)readNumber(msg, 1, 1000000);
+        return list.find([&](const Opportunity &o) { return o.id == id; });
+    }
+    template <class F>
+    void showWhere(F pred, const string &none)
+    {
+        bool any = false;
+        list.each([&](const Opportunity &o) {
+            if (pred(o))
+            {
+                o.display();
+                any = true;
+            }
+        });
+        if (!any)
+            cout << none << "\n";
+    }
+ 
 public:
-    void addOpportunity()
+    void add()
     {
         Opportunity o;
         o.input();
-
-        for (int i = 0; i < opportunities.size(); i++)
+        if (list.find([&](const Opportunity &x) { return x.id == o.id; }))
+            cout << "ID already exists!\n";
+        else
         {
-            if (opportunities[i].id == o.id)
-            {
-                cout << "ID already exists!\n";
-                return;
-            }
+            list.push_back(o);
+            cout << "Opportunity Added Successfully!\n";
         }
-
-        opportunities.push_back(o);
-        cout << "Opportunity Added Successfully!\n";
     }
-
-    void displayOpportunities()
+    void displayAll() { showWhere([](const Opportunity &) { return true; }, "No Opportunities Available."); }
+    void search()
     {
-        if (opportunities.empty())
-        {
-            cout << "No Opportunities Available.\n";
-            return;
-        }
-
-        for (int i = 0; i < opportunities.size(); i++)
-        {
-            opportunities[i].display();
-        }
+        if (Opportunity *o = byId("Opportunity ID: "))
+            o->display();
+        else
+            cout << "Opportunity Not Found.\n";
     }
-
-    void searchOpportunity()
+    void remove()
     {
-        int id;
-        cout << "Enter Opportunity ID: ";
-        cin >> id;
-
-        for (int i = 0; i < opportunities.size(); i++)
-        {
-            if (opportunities[i].id == id)
-            {
-                cout << "Opportunity Found!\n";
-                opportunities[i].display();
-                return;
-            }
-        }
-
-        cout << "Opportunity Not Found.\n";
+        int id = (int)readNumber("Opportunity ID to Delete: ", 1, 1000000);
+        cout << (list.removeIf([&](const Opportunity &o) { return o.id == id; })
+                     ? "Opportunity Deleted Successfully!\n"
+                     : "Opportunity Not Found.\n");
     }
-
-    void deleteOpportunity()
+    void update()
     {
-        int id;
-        cout << "Enter Opportunity ID to Delete: ";
-        cin >> id;
-
-        for (int i = 0; i < opportunities.size(); i++)
+        if (Opportunity *o = byId("Opportunity ID to Update: "))
         {
-            if (opportunities[i].id == id)
-            {
-                opportunities.erase(opportunities.begin() + i);
-                cout << "Opportunity Deleted Successfully!\n";
-                return;
-            }
+            cout << "Enter New Details:\n";
+            o->input();
+            cout << "Opportunity Updated Successfully!\n";
         }
-
-        cout << "Opportunity Not Found.\n";
+        else
+            cout << "Opportunity Not Found.\n";
     }
-
-    void updateOpportunity()
-    {
-        int id;
-        cout << "Enter Opportunity ID to Update: ";
-        cin >> id;
-
-        for (int i = 0; i < opportunities.size(); i++)
-        {
-            if (opportunities[i].id == id)
-            {
-                cout << "Enter New Details:\n";
-                opportunities[i].input();
-                cout << "Opportunity Updated Successfully!\n";
-                return;
-            }
-        }
-
-        cout << "Opportunity Not Found.\n";
-    }
-
     void sortByDeadline()
     {
-        sort(opportunities.begin(), opportunities.end(),
-             [](Opportunity a, Opportunity b)
-             {
-                 return a.deadline < b.deadline;
-             });
-
+        list.sort([](const Opportunity &a, const Opportunity &b) { return a.deadline < b.deadline; });
         cout << "Opportunities Sorted by Deadline.\n";
-        displayOpportunities();
+        displayAll();
     }
-
     void filterByType()
     {
-        string type;
-        int found = 0;
-
-        cout << "Enter Type to Filter: ";
-        cin >> type;
-
-        for (int i = 0; i < opportunities.size(); i++)
-        {
-            if (opportunities[i].type == type)
-            {
-                opportunities[i].display();
-                found = 1;
-            }
-        }
-
-        if (!found)
-            cout << "No Matching Opportunities Found.\n";
+        string t = toLower(readText("Type to Filter: "));
+        showWhere([&](const Opportunity &o) { return toLower(o.type) == t; }, "No Matching Opportunities Found.");
     }
-
     void searchBySkill()
     {
-        string skill;
-        int found = 0;
-
-        cout << "Enter Skill to Search: ";
-        getline(cin >> ws, skill);
-
-        for (int i = 0; i < opportunities.size(); i++)
-        {
-            if (opportunities[i].skill == skill)
-            {
-                opportunities[i].display();
-                found = 1;
-            }
-        }
-
-        if (!found)
-            cout << "No Opportunities Found for This Skill.\n";
+        string s = toLower(readText("Skill to Search: "));
+        showWhere([&](const Opportunity &o) { return toLower(o.skill) == s; }, "No Opportunities Found for This Skill.");
     }
-
     void menu()
     {
-        int choice;
-
-        do
+        while (true)
         {
-            cout << "\n===== CAMPUS CONNECT =====\n";
-            cout << "       OPPORTUNITY HUB\n";
-            cout << "1. Add Opportunity\n";
-            cout << "2. Display All Opportunities\n";
-            cout << "3. Search by ID\n";
-            cout << "4. Delete Opportunity\n";
-            cout << "5. Update Opportunity\n";
-            cout << "6. Sort by Deadline\n";
-            cout << "7. Filter by Type\n";
-            cout << "8. Search by Skill\n";
-            cout << "0. Exit\n";
-            cout << "Enter Your Choice: ";
-            cin >> choice;
-
-            switch (choice)
+            cout << "\n===== CAMPUS CONNECT - OPPORTUNITY HUB =====\n"
+                    "1. Add Opportunity\n2. Display All\n3. Search by ID\n4. Delete\n"
+                    "5. Update\n6. Sort by Deadline\n7. Filter by Type\n8. Search by Skill\n0. Back\n";
+            switch ((int)readNumber("Choice: ", 0, 8))
             {
-            case 1:
-                addOpportunity();
-                break;
-
-            case 2:
-                displayOpportunities();
-                break;
-
-            case 3:
-                searchOpportunity();
-                break;
-
-            case 4:
-                deleteOpportunity();
-                break;
-
-            case 5:
-                updateOpportunity();
-                break;
-
-            case 6:
-                sortByDeadline();
-                break;
-
-            case 7:
-                filterByType();
-                break;
-
-            case 8:
-                searchBySkill();
-                break;
-
-            case 0:
-                cout << "Exiting Opportunity Hub.\n";
-                break;
-
-            default:
-                cout << "Invalid Choice!\n";
+            case 1: add(); break;
+            case 2: displayAll(); break;
+            case 3: search(); break;
+            case 4: remove(); break;
+            case 5: update(); break;
+            case 6: sortByDeadline(); break;
+            case 7: filterByType(); break;
+            case 8: searchBySkill(); break;
+            case 0: return;
             }
-
-        } while (choice != 0);
+        }
     }
 };
-
+ 
 class RecentStack
 {
     static const int CAPACITY = 5;
-    int arr[CAPACITY];
-    int top;
-
+    List<int> s;
+ 
 public:
-    RecentStack() : top(-1) {}
-    bool isEmpty() const { return top == -1; }
-    bool isFull() const { return top == CAPACITY - 1; }
-
-    void push(int tipId)
+    bool isEmpty() const { return s.empty(); }
+    void push(int id)
     {
-
-        for (int i = 0; i <= top; i++)
-            if (arr[i] == tipId)
-            {
-                for (int j = i; j < top; j++)
-                    arr[j] = arr[j + 1];
-                top--;
-                break;
-            }
-
-        if (isFull())
-        {
-            for (int j = 0; j < top; j++)
-                arr[j] = arr[j + 1];
-            top--;
-        }
-        arr[++top] = tipId;
+        s.removeIf([&](int x) { return x == id; }); 
+        int dropped;
+        if (s.size() == CAPACITY)
+            s.pop_back(dropped);
+        s.push_front(id);
     }
-
-    bool pop(int &tipId)
-    {
-        if (isEmpty())
-            return false;
-        tipId = arr[top--];
-        return true;
-    }
-
-    int size() const { return top + 1; }
-    int peekAt(int fromTop) const { return arr[top - fromTop]; }
+    bool pop(int &id) { return s.pop_front(id); }
+    bool peek(int &id) const { return s.front(id); }
+    template <class F>
+    void each(F f) const { s.each(f); } // latest first
 };
-
+ 
 struct Tip
 {
-    int id;
-    string subject;
-    string category;
-    string keywords;
-    string text;
+    int id = 0;
+    string subject, category, keywords, text;
 };
-
+ 
 class StudyTips
 {
-    vector<Tip> tips;
+    List<Tip> tips;
     RecentStack recent;
     string fileName;
-
-    void printTip(const Tip &t) const
+ 
+    static void printTip(const Tip &t)
     {
-        cout << "[" << t.id << "] (" << t.subject << " - " << t.category << ")\n    "
-             << t.text << "\n";
+        cout << "[" << t.id << "] (" << t.subject << " - " << t.category << ")\n    " << t.text << "\n";
     }
-
-    const Tip *findTip(int id) const
+    const Tip *findTip(int id)
     {
-        for (const Tip &t : tips)
-            if (t.id == id)
-                return &t;
-        return nullptr;
+        return tips.find([&](const Tip &t) { return t.id == id; });
     }
-
-    string normalizeSubject(const string &subject) const
+    template <class F>
+    void printWhere(F pred, const string &none)
+    {
+        bool any = false;
+        tips.each([&](const Tip &t) {
+            if (pred(t))
+            {
+                printTip(t);
+                any = true;
+            }
+        });
+        if (!any)
+            cout << none << "\n";
+    }
+    static string normalizeSubject(const string &subject)
     {
         string s = toLower(subject);
         if (s.find("dsa") != string::npos || s.find("data struct") != string::npos || s == "ds")
@@ -377,8 +391,7 @@ class StudyTips
             return "oop";
         return s;
     }
-
-    bool keywordMatch(const Tip &t, const string &text) const
+    static bool keywordMatch(const Tip &t, const string &text)
     {
         stringstream ss(t.keywords);
         string kw;
@@ -387,19 +400,10 @@ class StudyTips
                 return true;
         return false;
     }
-
-    vector<string> subjectList() const
-    {
-        vector<string> list;
-        for (const Tip &t : tips)
-            if (find(list.begin(), list.end(), t.subject) == list.end())
-                list.push_back(t.subject);
-        return list;
-    }
-
+ 
 public:
     StudyTips(const string &file = "tips.txt") : fileName(file) { loadFromFile(); }
-
+ 
     void loadFromFile()
     {
         tips.clear();
@@ -420,74 +424,58 @@ public:
             {
                 if (f[4].empty())
                     continue;
-                tips.push_back({stoi(f[0]), f[1], f[2], toLower(f[3]), f[4]});
+                Tip t;
+                t.id = stoi(f[0]);
+                t.subject = f[1];
+                t.category = f[2];
+                t.keywords = toLower(f[3]);
+                t.text = f[4];
+                tips.push_back(t);
             }
             catch (...)
             {
             }
         }
     }
-
-    int count() const { return (int)tips.size(); }
-
-    void displayAll() const
+ 
+    void displayAll() { printWhere([](const Tip &) { return true; }, "No tips available."); }
+ 
+    void filterBySubject()
     {
-        if (tips.empty())
-        {
-            cout << "No tips available.\n";
-            return;
-        }
-        for (const Tip &t : tips)
-            printTip(t);
-    }
-
-    void filterBySubject() const
-    {
-        vector<string> subs = subjectList();
+        List<string> subs; // distinct subjects
+        tips.each([&](const Tip &t) {
+            if (!subs.find([&](const string &s) { return s == t.subject; }))
+                subs.push_back(t.subject);
+        });
         if (subs.empty())
         {
             cout << "No tips available.\n";
             return;
         }
-        for (size_t i = 0; i < subs.size(); i++)
-            cout << i + 1 << ". " << subs[i] << "\n";
-        int c = (int)readNumber("Choose subject: ", 1, subs.size()) - 1;
-        for (const Tip &t : tips)
-            if (t.subject == subs[c])
-                printTip(t);
+        int i = 0;
+        subs.each([&](const string &s) { cout << ++i << ". " << s << "\n"; });
+        string pick = subs.at((int)readNumber("Choose subject: ", 1, subs.size()) - 1);
+        printWhere([&](const Tip &t) { return t.subject == pick; }, "No tips.");
     }
-
-    void filterByCategory() const
+ 
+    void filterByCategory()
     {
         const string cats[] = {"Concept", "Practice", "Revision", "Productivity"};
         for (int i = 0; i < 4; i++)
             cout << i + 1 << ". " << cats[i] << "\n";
-        int c = (int)readNumber("Choose category: ", 1, 4) - 1;
-        bool any = false;
-        for (const Tip &t : tips)
-            if (t.category == cats[c])
-            {
-                printTip(t);
-                any = true;
-            }
-        if (!any)
-            cout << "No tips in this category.\n";
+        string c = cats[(int)readNumber("Choose category: ", 1, 4) - 1];
+        printWhere([&](const Tip &t) { return t.category == c; }, "No tips in this category.");
     }
-
-    void searchByKeyword() const
+ 
+    void searchByKeyword()
     {
         string key = toLower(readText("Keyword (e.g. stack, inheritance): "));
-        bool any = false;
-        for (const Tip &t : tips)
-            if (t.keywords.find(key) != string::npos || toLower(t.text).find(key) != string::npos)
-            {
-                printTip(t);
-                any = true;
-            }
-        if (!any)
-            cout << "No tips found for \"" << key << "\".\n";
+        printWhere([&](const Tip &t) {
+            return t.keywords.find(key) != string::npos || toLower(t.text).find(key) != string::npos;
+        },
+                   "No tips found for \"" + key + "\".");
     }
-
+ 
     void viewTip()
     {
         const Tip *t = findTip((int)readNumber("Tip ID: ", 1, 100000));
@@ -499,8 +487,8 @@ public:
         printTip(*t);
         recent.push(t->id);
     }
-
-    void showRecent() const
+ 
+    void showRecent()
     {
         if (recent.isEmpty())
         {
@@ -508,14 +496,12 @@ public:
             return;
         }
         cout << "Recently viewed (latest first):\n";
-        for (int i = 0; i < recent.size(); i++)
-        {
-            const Tip *t = findTip(recent.peekAt(i));
-            if (t)
+        recent.each([&](int id) {
+            if (const Tip *t = findTip(id))
                 printTip(*t);
-        }
+        });
     }
-
+ 
     void goBack()
     {
         int id;
@@ -524,27 +510,27 @@ public:
             cout << "Nothing to go back to.\n";
             return;
         }
-        if (recent.isEmpty())
+        if (!recent.peek(id))
         {
             cout << "No earlier tip.\n";
             return;
         }
         cout << "Previous tip:\n";
-        const Tip *t = findTip(recent.peekAt(0));
-        if (t)
+        if (const Tip *t = findTip(id))
             printTip(*t);
     }
-
-    void suggestForTask(const string &subject, const string &topic,
-                        const string &event, int limit = 2)
+ 
+    // event: "new" or "done". Prints the best `limit` tips for a task.
+    void suggestForTask(const string &subject, const string &topic, const string &event, int limit = 2)
     {
-        string subj = normalizeSubject(subject);
-        string text = toLower(topic);
-        vector<pair<int, int>> scored;
-
-        for (size_t i = 0; i < tips.size(); i++)
+        struct Scored
         {
-            const Tip &t = tips[i];
+            int score = 0;
+            const Tip *tip = nullptr;
+        };
+        string subj = normalizeSubject(subject), text = toLower(topic);
+        List<Scored> scored;
+        tips.each([&](const Tip &t) {
             int score = 0;
             string ts = toLower(t.subject);
             if (ts == subj)
@@ -552,136 +538,81 @@ public:
             else if (ts == "general")
                 score += 1;
             else
-                continue;
+                return;
             if (keywordMatch(t, text))
                 score += 3;
             if (event == "done" && t.category == "Revision")
                 score += 2;
             if (event == "new" && (t.category == "Concept" || t.category == "Practice"))
                 score += 2;
-            scored.push_back({score, (int)i});
-        }
-        stable_sort(scored.begin(), scored.end(),
-                    [](const pair<int, int> &a, const pair<int, int> &b)
-                    { return a.first > b.first; });
-
+            Scored s;
+            s.score = score;
+            s.tip = &t;
+            scored.push_back(s);
+        });
         if (scored.empty())
             return;
+        scored.sort([](const Scored &a, const Scored &b) { return a.score > b.score; });
         cout << "\n--- Study tips for this " << (event == "done" ? "completed" : "new") << " task ---\n";
-        for (int i = 0; i < (int)scored.size() && i < limit; i++)
-        {
-            printTip(tips[scored[i].second]);
-            recent.push(tips[scored[i].second].id);
-        }
+        int shown = 0;
+        scored.each([&](const Scored &s) {
+            if (shown++ < limit)
+            {
+                printTip(*s.tip);
+                recent.push(s.tip->id);
+            }
+        });
     }
-
+ 
     void menu()
     {
         while (true)
         {
             cout << "\n===== STUDY TIPS (" << tips.size() << " loaded) =====\n"
-                 << "1. Display all tips\n"
-                 << "2. Filter by subject\n"
-                 << "3. Filter by category\n"
-                 << "4. Search by keyword\n"
-                 << "5. Open a tip by ID\n"
-                 << "6. Recently viewed tips (stack)\n"
-                 << "7. Go back to previous tip (pop)\n"
-                 << "8. Reload tips from file\n"
-                 << "0. Back\n";
+                    "1. Display all tips\n2. Filter by subject\n3. Filter by category\n"
+                    "4. Search by keyword\n5. Open a tip by ID\n6. Recently viewed tips (stack)\n"
+                    "7. Go back to previous tip (pop)\n8. Reload tips from file\n0. Back\n";
             switch ((int)readNumber("Choice: ", 0, 8))
             {
-            case 1:
-                displayAll();
-                break;
-            case 2:
-                filterBySubject();
-                break;
-            case 3:
-                filterByCategory();
-                break;
-            case 4:
-                searchByKeyword();
-                break;
-            case 5:
-                viewTip();
-                break;
-            case 6:
-                showRecent();
-                break;
-            case 7:
-                goBack();
-                break;
-            case 8:
-                loadFromFile();
-                cout << tips.size() << " tips loaded.\n";
-                break;
-            case 0:
-                return;
+            case 1: displayAll(); break;
+            case 2: filterBySubject(); break;
+            case 3: filterByCategory(); break;
+            case 4: searchByKeyword(); break;
+            case 5: viewTip(); break;
+            case 6: showRecent(); break;
+            case 7: goBack(); break;
+            case 8: loadFromFile(); cout << tips.size() << " tips loaded.\n"; break;
+            case 0: return;
             }
         }
     }
 };
+ 
 struct Task
 {
-    int id;
-    string type;
-    string subject;
-    string topic;
-    string date;
-    double targetHours;
-    double hoursDone;
-    bool completed;
+    int id = 0;
+    string type, subject, topic, date;
+    double targetHours = 0, hoursDone = 0;
+    bool completed = false;
 };
-
-struct TaskNode
-{
-    Task data;
-    TaskNode *next;
-    TaskNode(const Task &t) : data(t), next(nullptr) {}
-};
-
+ 
 class StudyPlanner
 {
-    TaskNode *head;
-    TaskNode *tail;
-    int count;
-    int nextId;
+    List<Task> tasks;      
+    List<int> pending;    
+    int nextId = 1;
     string fileName;
-    queue<int> pendingQueue;
-
-    void appendTask(const Task &t)
-    {
-        TaskNode *node = new TaskNode(t);
-        if (!head)
-            head = tail = node;
-        else
-        {
-            tail->next = node;
-            tail = node;
-        }
-        count++;
-    }
-    void clearList()
-    {
-        while (head)
-        {
-            TaskNode *tmp = head;
-            head = head->next;
-            delete tmp;
-        }
-        tail = nullptr;
-        count = 0;
-    }
-
-    bool validDate(const string &d)
+    StudyTips *tips;      
+ 
+    static bool validDate(const string &d)
     {
         int y, m, day;
         char c1, c2;
         stringstream ss(d);
-        return (ss >> y >> c1 >> m >> c2 >> day) && c1 == '-' && c2 == '-' && m >= 1 && m <= 12 && day >= 1 && day <= 31;
+        return (ss >> y >> c1 >> m >> c2 >> day) && c1 == '-' && c2 == '-' &&
+               m >= 1 && m <= 12 && day >= 1 && day <= 31;
     }
-    string readDate(const string &msg)
+    static string readDate(const string &msg)
     {
         while (true)
         {
@@ -693,12 +624,16 @@ class StudyPlanner
     }
     Task *findTask(int id)
     {
-        for (TaskNode *p = head; p; p = p->next)
-            if (p->data.id == id)
-                return &p->data;
-        return nullptr;
+        return tasks.find([&](const Task &t) { return t.id == id; });
     }
-
+    Task *askTask(const string &msg)
+    {
+        Task *t = findTask((int)readNumber(msg, 1, 100000));
+        if (!t)
+            cout << "Task not found.\n";
+        return t;
+    }
+ 
     void loadFromFile()
     {
         ifstream in(fileName);
@@ -711,10 +646,18 @@ class StudyPlanner
                 getline(ss, f[i], '|');
             try
             {
-                Task t{stoi(f[0]), f[1], f[2], f[3], f[4], stod(f[5]), stod(f[6]), f[7] == "1"};
-                appendTask(t);
+                Task t;
+                t.id = stoi(f[0]);
+                t.type = f[1];
+                t.subject = f[2];
+                t.topic = f[3];
+                t.date = f[4];
+                t.targetHours = stod(f[5]);
+                t.hoursDone = stod(f[6]);
+                t.completed = f[7] == "1";
+                tasks.push_back(t);
                 if (!t.completed)
-                    pendingQueue.push(t.id);
+                    pending.push_back(t.id);
                 if (t.id >= nextId)
                     nextId = t.id + 1;
             }
@@ -726,67 +669,35 @@ class StudyPlanner
     void saveToFile()
     {
         ofstream out(fileName);
-        for (TaskNode *p = head; p; p = p->next)
-        {
-            const Task &t = p->data;
-            out << t.id << '|' << t.type << '|' << t.subject << '|' << t.topic << '|'
-                << t.date << '|' << t.targetHours << '|' << t.hoursDone << '|'
-                << t.completed << '\n';
-        }
+        tasks.each([&](const Task &t) {
+            out << t.id << '|' << t.type << '|' << t.subject << '|' << t.topic << '|' << t.date << '|'
+                << t.targetHours << '|' << t.hoursDone << '|' << t.completed << '\n';
+        });
     }
-
-    void printHeader()
+ 
+    static void printHeader()
     {
-        cout << left << setw(4) << "ID" << setw(8) << "Type" << setw(16) << "Subject"
-             << setw(28) << "Topic" << setw(12) << "Date" << "Progress\n"
-             << string(85, '-') << "\n";
+        cout << left << setw(4) << "ID" << setw(8) << "Type" << setw(16) << "Subject" << setw(28) << "Topic"
+             << setw(12) << "Date" << "Progress\n" << string(85, '-') << "\n";
     }
-    void printTask(const Task &t)
+    static void printTask(const Task &t)
     {
         cout << left << setw(4) << t.id << setw(8) << t.type << setw(16) << t.subject
-             << setw(28) << t.topic.substr(0, 26) << setw(12) << t.date
-             << fixed << setprecision(1) << t.hoursDone << "/" << t.targetHours << " hrs  "
-             << (t.completed ? "Done" : "Pending") << "\n";
+             << setw(28) << t.topic.substr(0, 26) << setw(12) << t.date << fixed << setprecision(1)
+             << t.hoursDone << "/" << t.targetHours << " hrs  " << (t.completed ? "Done" : "Pending") << "\n";
         cout.unsetf(ios::fixed);
     }
-
-    static bool lessThan(const Task *a, const Task *b, int sortBy)
+    void finish(Task &t)
     {
-        if (sortBy == 1)
-            return a->date < b->date;
-        if (sortBy == 2)
-            return (a->targetHours - a->hoursDone) < (b->targetHours - b->hoursDone);
-        return a->subject < b->subject;
+        t.completed = true;
+        if (tips)
+            tips->suggestForTask(t.subject, t.topic, "done");
     }
-    static void mergeSort(vector<Task *> &v, int lo, int hi, int sortBy)
-    {
-        if (lo >= hi)
-            return;
-        int mid = (lo + hi) / 2;
-        mergeSort(v, lo, mid, sortBy);
-        mergeSort(v, mid + 1, hi, sortBy);
-        vector<Task *> tmp;
-        int i = lo, j = mid + 1;
-        while (i <= mid && j <= hi)
-            tmp.push_back(lessThan(v[j], v[i], sortBy) ? v[j++] : v[i++]);
-        while (i <= mid)
-            tmp.push_back(v[i++]);
-        while (j <= hi)
-            tmp.push_back(v[j++]);
-        for (int k = 0; k < (int)tmp.size(); k++)
-            v[lo + k] = tmp[k];
-    }
-
+ 
 public:
-    StudyPlanner(const string &file = "study_tasks.txt")
-        : head(nullptr), tail(nullptr), count(0), nextId(1), fileName(file)
-    {
-        loadFromFile();
-    }
-    ~StudyPlanner() { clearList(); }
-    StudyPlanner(const StudyPlanner &) = delete;
-    StudyPlanner &operator=(const StudyPlanner &) = delete;
-
+    StudyPlanner(const string &file = "study_tasks.txt", StudyTips *tp = nullptr)
+        : fileName(file), tips(tp) { loadFromFile(); }
+ 
     void addTask(const string &type)
     {
         Task t;
@@ -796,161 +707,131 @@ public:
         t.topic = readText("Topic (e.g. Unit 2 - Linked List): ");
         t.date = readDate(type == "Daily" ? "Date (YYYY-MM-DD): " : "Week start date (YYYY-MM-DD): ");
         t.targetHours = readNumber("Target study hours: ", 0.5, type == "Daily" ? 24 : 100);
-        t.hoursDone = 0;
-        t.completed = false;
-        for (char &c : t.subject)
-            if (c == '|')
-                c = '/';
-        for (char &c : t.topic)
-            if (c == '|')
-                c = '/';
-        appendTask(t);
-        pendingQueue.push(t.id);
+        for (char &c : t.subject) if (c == '|') c = '/';
+        for (char &c : t.topic) if (c == '|') c = '/';
+        tasks.push_back(t);
+        pending.push_back(t.id);
         saveToFile();
         cout << type << " task added with ID " << t.id << ".\n";
+        if (tips)
+            tips->suggestForTask(t.subject, t.topic, "new");
     }
-
+ 
     void viewTasks(const string &type)
     {
         bool any = false;
-        for (TaskNode *p = head; p; p = p->next)
-        {
-            const Task &t = p->data;
+        tasks.each([&](const Task &t) {
             if (type != "All" && t.type != type)
-                continue;
+                return;
             if (!any)
-            {
                 printHeader();
-                any = true;
-            }
+            any = true;
             printTask(t);
-        }
+        });
         if (!any)
             cout << "No tasks found.\n";
     }
-
+ 
     void viewSorted()
     {
-        if (!head)
+        if (tasks.empty())
         {
             cout << "No tasks found.\n";
             return;
         }
         cout << "Sort by:\n 1. Date\n 2. Hours left (least first)\n 3. Subject\n";
-        int sortBy = (int)readNumber("Choice: ", 1, 3);
-
-        vector<Task *> arr;
-        for (TaskNode *p = head; p; p = p->next)
-            arr.push_back(&p->data);
-        mergeSort(arr, 0, (int)arr.size() - 1, sortBy);
-
-        printHeader();
-        for (Task *t : arr)
-            printTask(*t);
+        int by = (int)readNumber("Choice: ", 1, 3);
+        tasks.sort([by](const Task &a, const Task &b) {
+            if (by == 1) return a.date < b.date;
+            if (by == 2) return (a.targetHours - a.hoursDone) < (b.targetHours - b.hoursDone);
+            return a.subject < b.subject;
+        });
+        viewTasks("All");
     }
-
+ 
     void markComplete()
     {
-        Task *t = findTask((int)readNumber("Task ID to mark complete: ", 1, 100000));
+        Task *t = askTask("Task ID to mark complete: ");
         if (!t)
-        {
-            cout << "Task not found.\n";
             return;
-        }
         if (t->completed)
         {
             cout << "Task is already complete.\n";
             return;
         }
-        t->completed = true;
+        finish(*t);
         saveToFile();
         cout << "Task " << t->id << " marked complete.\n";
     }
-
+ 
     void logStudyHours()
     {
-        Task *t = findTask((int)readNumber("Task ID: ", 1, 100000));
+        Task *t = askTask("Task ID: ");
         if (!t)
-        {
-            cout << "Task not found.\n";
             return;
-        }
         t->hoursDone += readNumber("Hours studied: ", 0.1, 24);
         saveToFile();
         cout << "Total for this task: " << t->hoursDone << "/" << t->targetHours << " hrs.\n";
         if (t->hoursDone >= t->targetHours && !t->completed)
             cout << "Target reached! You can mark this task complete.\n";
     }
-
+ 
     void studyReport()
     {
-        if (!head)
+        if (tasks.empty())
         {
             cout << "No tasks yet.\n";
             return;
         }
+        struct SubjectHours
+        {
+            string name;
+            double hrs = 0;
+        };
+        List<SubjectHours> bySubject;
         double target = 0, done = 0;
         int completed = 0;
-        vector<string> subjects;
-        vector<double> subjectHours;
-        for (TaskNode *p = head; p; p = p->next)
-        {
-            const Task &t = p->data;
+        tasks.each([&](const Task &t) {
             target += t.targetHours;
             done += t.hoursDone;
-            if (t.completed)
-                completed++;
-            size_t i = 0;
-            while (i < subjects.size() && subjects[i] != t.subject)
-                i++;
-            if (i == subjects.size())
+            completed += t.completed;
+            SubjectHours *s = bySubject.find([&](const SubjectHours &x) { return x.name == t.subject; });
+            if (!s)
             {
-                subjects.push_back(t.subject);
-                subjectHours.push_back(0);
+                SubjectHours n;
+                n.name = t.subject;
+                bySubject.push_back(n);
+                s = bySubject.find([&](const SubjectHours &x) { return x.name == t.subject; });
             }
-            subjectHours[i] += t.hoursDone;
-        }
-        cout << fixed << setprecision(1)
-             << "\nCompleted tasks: " << completed << "/" << count << "\n"
-             << "Hours studied  : " << done << " of " << target << " target hrs\n"
-             << "Hours by subject:\n";
-        for (size_t i = 0; i < subjects.size(); i++)
-            cout << "  " << left << setw(16) << subjects[i] << subjectHours[i] << " hrs\n";
+            s->hrs += t.hoursDone;
+        });
+        cout << fixed << setprecision(1) << "\nCompleted tasks: " << completed << "/" << tasks.size()
+             << "\nHours studied  : " << done << " of " << target << " target hrs\nHours by subject:\n";
+        bySubject.each([](const SubjectHours &s) { cout << "  " << left << setw(16) << s.name << s.hrs << " hrs\n"; });
         cout.unsetf(ios::fixed);
     }
-
+ 
     void showQueue()
     {
-        if (pendingQueue.empty())
-        {
-            cout << "Pending queue is empty.\n";
-            return;
-        }
-        queue<int> copy = pendingQueue;
         bool any = false;
-        while (!copy.empty())
-        {
-            Task *t = findTask(copy.front());
-            copy.pop();
+        pending.each([&](int id) {
+            Task *t = findTask(id);
             if (!t || t->completed)
-                continue;
+                return;
             if (!any)
-            {
                 printHeader();
-                any = true;
-            }
+            any = true;
             printTask(*t);
-        }
+        });
         if (!any)
             cout << "Pending queue is empty.\n";
     }
-
+ 
     void processNextTask()
     {
-        while (!pendingQueue.empty())
+        int id;
+        while (pending.pop_front(id)) 
         {
-            int id = pendingQueue.front();
-            pendingQueue.pop();
             Task *t = findTask(id);
             if (!t || t->completed)
                 continue;
@@ -963,82 +844,60 @@ public:
                 t->hoursDone += readNumber("Hours studied: ", 0.1, 24);
                 if (t->hoursDone >= t->targetHours)
                 {
-                    t->completed = true;
+                    finish(*t);
                     cout << "Target reached - task marked complete.\n";
                     saveToFile();
                     return;
                 }
-                pendingQueue.push(t->id);
                 saveToFile();
             }
-            else
-            {
-                pendingQueue.push(t->id);
-            }
+            pending.push_back(t->id); 
             return;
         }
         cout << "No pending tasks in the queue.\n";
     }
-
+ 
     void menu()
     {
         while (true)
         {
             cout << "\n===== STUDY PLANNER =====\n"
-                 << "1. Add daily task\n"
-                 << "2. Add weekly task\n"
-                 << "3. View daily tasks\n"
-                 << "4. View weekly tasks\n"
-                 << "5. View all tasks\n"
-                 << "6. Mark task complete\n"
-                 << "7. Log study hours\n"
-                 << "8. Study hours report\n"
-                 << "9. View tasks sorted\n"
-                 << "10. Show pending queue\n"
-                 << "11. Process next task from queue\n"
-                 << "0. Back\n";
+                    "1. Add daily task\n2. Add weekly task\n3. View daily tasks\n4. View weekly tasks\n"
+                    "5. View all tasks\n6. Mark task complete\n7. Log study hours\n8. Study hours report\n"
+                    "9. View tasks sorted\n10. Show pending queue\n11. Process next task from queue\n0. Back\n";
             switch ((int)readNumber("Choice: ", 0, 11))
             {
-            case 1:
-                addTask("Daily");
-                break;
-            case 2:
-                addTask("Weekly");
-                break;
-            case 3:
-                viewTasks("Daily");
-                break;
-            case 4:
-                viewTasks("Weekly");
-                break;
-            case 5:
-                viewTasks("All");
-                break;
-            case 6:
-                markComplete();
-                break;
-            case 7:
-                logStudyHours();
-                break;
-            case 8:
-                studyReport();
-                break;
-            case 9:
-                viewSorted();
-                break;
-            case 10:
-                showQueue();
-                break;
-            case 11:
-                processNextTask();
-                break;
-            case 0:
-                return;
+            case 1: addTask("Daily"); break;
+            case 2: addTask("Weekly"); break;
+            case 3: viewTasks("Daily"); break;
+            case 4: viewTasks("Weekly"); break;
+            case 5: viewTasks("All"); break;
+            case 6: markComplete(); break;
+            case 7: logStudyHours(); break;
+            case 8: studyReport(); break;
+            case 9: viewSorted(); break;
+            case 10: showQueue(); break;
+            case 11: processNextTask(); break;
+            case 0: return;
             }
         }
     }
 };
-
+ 
 int main()
 {
+    OpportunityHub hub;
+    StudyTips tips;
+    StudyPlanner planner("study_tasks.txt", &tips);
+    while (true)
+    {
+        cout << "\n===== CAMPUS CONNECT =====\n1. Opportunity Hub\n2. Study Planner\n3. Study Tips\n0. Exit\n";
+        switch ((int)readNumber("Choice: ", 0, 3))
+        {
+        case 1: hub.menu(); break;
+        case 2: planner.menu(); break;
+        case 3: tips.menu(); break;
+        case 0: return 0;
+        }
+    }
 }
