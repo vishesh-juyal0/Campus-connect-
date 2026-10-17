@@ -127,4 +127,12 @@ public:
         }
     }
 };
+int main()
+{
+    OpportunityHub hub;
+    hub.menu();
+
+    return 0;
+}
+
  
