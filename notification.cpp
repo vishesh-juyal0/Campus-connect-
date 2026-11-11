@@ -8,6 +8,7 @@ using namespace std;
 
 
 
+
 struct Notification
 {
     int id;
@@ -15,6 +16,7 @@ struct Notification
     string category;
     int priority;
 };
+
 
 
 
@@ -29,6 +31,7 @@ struct compare
 };
 
 
+
 priority_queue<Notification,
 vector< Notification>,compare>
     notifications;
@@ -40,6 +43,7 @@ set<string> categories;
 
 
 
+ 
 void addNotification(int id ,string message, string category,int priority)
 {
     Notification n = {id, message, 
@@ -53,12 +57,12 @@ void addNotification(int id ,string message, string category,int priority)
 
 
 
+
     void notification ()
     {
         addNotification(101, "C++ Internship deadline in 3 days", "Internship",2);
         addNotification(102, "DSA Hackathon deadline in 2 days", "Hackathon",3 );
         addNotification(103,"Technical Workshop", "Workshop",1);
-        addNotification(103,"technical Workshop","Workshop", 1);
         addNotification(104,"Cultural Fest","Event",1);
 
         cout<< "\n -----notifications ----\n";
@@ -145,7 +149,8 @@ void interestRecommendation()
 
 
 
-void attendanceReminder()
+
+void attendenceReminder()
 {
     int total,attended;
     float percentage;
@@ -180,6 +185,7 @@ void attendanceReminder()
 
 
 
+
 void collegeProgram()
 {
     cout<< "\n---College  Programs ----\n"<<endl;
@@ -195,11 +201,13 @@ void collegeProgram()
 
 
 
+
 struct opportunity
 {
     string title;
     string skill;
 };
+
 
 
 
@@ -234,6 +242,7 @@ void searchOpportunity()
 }
 
 
+
 void searchNotification()
 {
     int id;
@@ -257,7 +266,7 @@ void searchNotification()
 
 
 
-void ShowCategories()
+void showCategories()
 {
     cout<< "\n -----Notification Categories----\n"<<endl;
 
@@ -272,69 +281,113 @@ void ShowCategories()
     }
 }
 
-int main()
+struct Task
+{
+    string taskname;
+    string deadline;
+    bool completed;
+};
+
+vector<Task> tasks;
+
+void studyPlanner()
 {
     int choice;
 
-    do
-    {
-        cout << " \n =====CAMPUS CONNECT=====\n"<<endl;
-        cout << "1.Notificiation\n"<<endl;
-        cout << "2. Skill Recommendation\n"<<endl;
-        cout << "3. InterestRecommended\n"<<endl;
-        cout << "4. Attendence Reminder\n"<<endl;
-        cout << "5. College program\n"<<endl;
-        cout << "6. search oppournities \n"<<endl;
-        cout << "7. Search Notification by ID\n"<<endl;
-        cout << "8. Show Notification categories\n"<<endl;
-        cout << "9. Exit\n"<<endl; 
+    do{
+        cout <<  "\n---Daily Study Planner---\n"<<endl;
+        cout << "1. Add Task\n"<<endl;
+        cout << "2.Show Task\n"<<endl;
+        cout << "3.Mark Task Completed\n"<<endl;
+        cout << "4. Back to Main Menu\n"<<endl;
+        cout << "Enter a Choice:"<<endl;
+        cin>>choice;
 
-        cout << "Enter a choice "<<endl;
-        cin >> choice;
-
-        switch(choice)
+        if(choice == 1)
         {
-            case 1:
-                notification();
-                break;
+            Task t;
 
-            case 2:
-                recommendation();
-                break;
+            cout<<"Enter task name:"<<endl;
+            cin.ignore();
+            getline(cin,t.taskname);
 
-            case 3:
-                interestRecommendation();
-                break;
+            cout<< "Enter deadline:" << endl;
+            getline(cin, t.deadline);
 
-            case 4:
-                attendanceReminder();
-                break;
+            t.completed = false;
+            tasks.push_back(t);
+            cout<<"Task added succesfully!\n"<<endl;
+        }
+        else if(choice == 2)
+        {
+            if(tasks.empty())
+            {
+                cout << "No task available \n"<<endl;
+            }
+            else
+            {
+                for(int i=0;i< tasks.size();i++)
+                {
+                    cout<<"\nTask"<< i+1<< ":"  <<   tasks[i].taskname << endl;
+                    cout<<"Deadline:"<<tasks[i].deadline << endl;
+                
+                if(tasks[i].completed)
+                {
+                    cout<<"Status:Completed\n"<<endl;
+                }
+                else
+                {
+                    cout<<"status: Pending\n"<<endl;
 
-            case 5:
-                collegeProgram();
-                break;
+                }
 
-           case 6:
-                searchOpportunity();
-                break;
+            }
+        }
+    }
+    else if(choice == 3)
+    {
+        int n;
+        cout<<"Enter task number :"<<endl;
 
-            case 7:
-                searchNotification();
-                break;
-
-            case 8:
-                ShowCategories();
-                break;    
-
-            case 9:
-            cout << "Thank you for using campus connect!!\n"<<endl;
-            break;
-
-            default:
-            cout<<"Invalid choice\n"<<endl;
-        } 
-    }while(choice != 9);
-    return 0;
+        cin >> n;
+        if(n>= 1 && n<= tasks.size())
+        {
+            tasks[n-1].completed = true;
+            cout<<"Task marked as completed!\n"<<endl;
+        }
+        else
+        {
+            cout<<"Invalid task number\n"<<endl;
+        }
+    }
+    else if(choice!=4)
+    {
+        cout<<"Invalid Choice.\n"<<endl;
+    }
+  }while(choice!=4);
 }
-    
-    
+
+
+
+void viewStudyTasks()
+{
+    if(tasks.empty())
+    {
+        cout<< "No study task available\n"<<endl;
+        return;
+    }
+
+    cout<< "\n---StudyPlanner----\n"<<endl;
+
+   for(int i=0; i < tasks.size(); i++)
+    {
+       cout<<"Task: " << tasks[i].taskname << endl;
+       cout <<"Deadline:" << tasks[i].deadline<<endl;
+
+       if(tasks[i].completed)
+       cout<< "Status Completed\n"<<endl;
+       else
+          cout<< "Status: pending\n"<<endl;
+    }
+}
+
