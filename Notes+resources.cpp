@@ -2,13 +2,14 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <sstream>
 #include <algorithm>
 using namespace std;
 
 struct Note {
     int id;
     string title, subject, content;
-    Note *next;
+    Note *next, *hashNext;
 };
 
 struct Resource {
@@ -22,22 +23,83 @@ Resource *rhead = NULL;
 const int SIZE = 100;
 Note *table[SIZE] = {NULL};
 
-
 int hashID(int id) {
-    return id % SIZE;
+    return (id % SIZE + SIZE) % SIZE;
+}
+
+void insertHash(Note *n) {
+    int i = hashID(n->id);
+    n->hashNext = table[i];
+    table[i] = n;
 }
 
 Note* searchID(int id) {
     Note *p = table[hashID(id)];
 
     while (p != NULL) {
-        if (p->id == id)
-            return p;
-        p = p->next;
+        if (p->id == id) return p;
+        p = p->hashNext;
     }
     return NULL;
 }
 
+void saveNotes() {
+    ofstream f("notes.txt");
+
+    for (Note *p = head; p != NULL; p = p->next)
+        f << p->id << "|" << p->title << "|"
+          << p->subject << "|" << p->content << "\n";
+
+    f.close();
+}
+
+void saveResources() {
+    ofstream f("resources.txt");
+
+    for (Resource *p = rhead; p != NULL; p = p->next)
+        f << p->title << "|" << p->subject
+          << "|" << p->link << "\n";
+
+    f.close();
+}
+
+void loadData() {
+    string line, a, b, c, d;
+    ifstream f("notes.txt");
+
+    while (getline(f, line)) {
+        stringstream ss(line);
+
+        getline(ss, a, '|');
+        getline(ss, b, '|');
+        getline(ss, c, '|');
+        getline(ss, d);
+
+        if (a.empty()) continue;
+
+        int id = stoi(a);
+        if (searchID(id) != NULL) continue;
+
+        Note *n = new Note{id, b, c, d, head, NULL};
+        head = n;
+        insertHash(n);
+    }
+    f.close();
+
+    ifstream r("resources.txt");
+
+    while (getline(r, line)) {
+        stringstream ss(line);
+
+        getline(ss, a, '|');
+        getline(ss, b, '|');
+        getline(ss, c);
+
+        Resource *p = new Resource{a, b, c, rhead};
+        rhead = p;
+    }
+    r.close();
+}
 
 void createNote() {
     Note *n = new Note;
@@ -45,7 +107,7 @@ void createNote() {
     cout << "Enter ID: ";
     cin >> n->id;
 
-    if (searchID(n->id) != NULL) {
+    if (searchID(n->id)) {
         cout << "ID already exists!\n";
         delete n;
         return;
@@ -53,33 +115,25 @@ void createNote() {
 
     cin.ignore();
 
-    cout << "Enter title: ";
+    cout << "Title: ";
     getline(cin, n->title);
 
-    cout << "Enter subject: ";
+    cout << "Subject: ";
     getline(cin, n->subject);
 
-    cout << "Enter content: ";
+    cout << "Content: ";
     getline(cin, n->content);
 
     n->next = head;
     head = n;
 
-    
-    n->next = head->next;
-    table[hashID(n->id)] = n;
-
-    ofstream f("notes.txt", ios::app);
-    f << n->id << "|" << n->title << "|"
-      << n->subject << "|" << n->content << "\n";
-    f.close();
+    insertHash(n);
+    saveNotes();
 
     cout << "Note added!\n";
 }
 
-
 void displayNotes() {
-    
     Note *p = head;
 
     while (p != NULL) {
@@ -87,10 +141,10 @@ void displayNotes() {
              << "\nTitle: " << p->title
              << "\nSubject: " << p->subject
              << "\nContent: " << p->content << "\n";
+
         p = p->next;
     }
 }
-
 
 void searchNote() {
     int id;
@@ -99,13 +153,12 @@ void searchNote() {
 
     Note *p = searchID(id);
 
-    if (p != NULL)
+    if (p)
         cout << p->title << "\n" << p->subject
              << "\n" << p->content << "\n";
     else
         cout << "Note not found!\n";
 }
-
 
 void searchSubject() {
     string s;
@@ -114,14 +167,17 @@ void searchSubject() {
     cout << "Enter subject: ";
     getline(cin, s);
 
-    Note *p = head;
-    while (p != NULL) {
-        if (p->subject == s)
-            cout << p->id << " " << p->title << "\n";
-        p = p->next;
-    }
-}
+    bool found = false;
 
+    for (Note *p = head; p != NULL; p = p->next) {
+        if (p->subject == s) {
+            cout << p->id << " " << p->title << "\n";
+            found = true;
+        }
+    }
+
+    if (!found) cout << "No notes found!\n";
+}
 
 void editNote() {
     int id;
@@ -131,7 +187,7 @@ void editNote() {
 
     Note *p = searchID(id);
 
-    if (p == NULL) {
+    if (!p) {
         cout << "Note not found!\n";
         return;
     }
@@ -145,6 +201,7 @@ void editNote() {
     cout << "New content: ";
     getline(cin, p->content);
 
+    saveNotes();
     cout << "Note updated!\n";
 }
 
@@ -155,31 +212,39 @@ void deleteNote() {
 
     Note *p = head, *prev = NULL;
 
-    while (p != NULL && p->id != id) {
+    while (p && p->id != id) {
         prev = p;
         p = p->next;
     }
 
-    if (p == NULL) {
+    if (!p) {
         cout << "Note not found!\n";
         return;
     }
 
-    if (prev == NULL)
-        head = p->next;
-    else
-        prev->next = p->next;
+    if (prev) prev->next = p->next;
+    else head = p->next;
 
-    table[hashID(id)] = NULL;
+    int i = hashID(id);
+    Note *q = table[i], *old = NULL;
+
+    while (q && q != p) {
+        old = q;
+        q = q->hashNext;
+    }
+
+    if (old) old->hashNext = q->hashNext;
+    else table[i] = q->hashNext;
+
     delete p;
+    saveNotes();
 
     cout << "Note deleted!\n";
 }
 
-
 void sortNotes() {
-    for (Note *p = head; p != NULL; p = p->next) {
-        for (Note *q = p->next; q != NULL; q = q->next) {
+    for (Note *p = head; p; p = p->next) {
+        for (Note *q = p->next; q; q = q->next) {
             if (p->title > q->title) {
                 swap(p->id, q->id);
                 swap(p->title, q->title);
@@ -189,9 +254,15 @@ void sortNotes() {
         }
     }
 
+    for (int i = 0; i < SIZE; i++)
+        table[i] = NULL;
+
+    for (Note *p = head; p; p = p->next)
+        insertHash(p);
+
+    saveNotes();
     displayNotes();
 }
-
 
 void addResource() {
     Resource *r = new Resource;
@@ -209,42 +280,37 @@ void addResource() {
     r->next = rhead;
     rhead = r;
 
-    ofstream f("resources.txt", ios::app);
-    f << r->title << "|" << r->subject
-      << "|" << r->link << "\n";
-    f.close();
-
+    saveResources();
     cout << "Resource added!\n";
 }
 
-
 void displayResources() {
-    Resource *p = rhead;
-
-    while (p != NULL) {
-        cout << "\n" << p->title
-             << "\n" << p->subject
-             << "\n" << p->link << "\n";
-        p = p->next;
+    for (Resource *p = rhead; p; p = p->next) {
+        cout << "\nTitle: " << p->title
+             << "\nSubject: " << p->subject
+             << "\nLink: " << p->link << "\n";
     }
 }
 
 int main() {
+    loadData();
+
     int choice;
 
     do {
-        cout << "\n--- CampusConnect ---\n";
-        cout << "1. Create note\n";
-        cout << "2. Display notes\n";
+        cout << "\n--- CAMPUSCONNECT ---\n";
+        cout << "1. Create Note\n";
+        cout << "2. Display Notes\n";
         cout << "3. Search by ID\n";
-        cout << "4. Search by subject\n";
-        cout << "5. Edit note\n";
-        cout << "6. Delete note\n";
-        cout << "7. Sort notes\n";
-        cout << "8. Add resource\n";
-        cout << "9. Display resources\n";
+        cout << "4. Search by Subject\n";
+        cout << "5. Edit Note\n";
+        cout << "6. Delete Note\n";
+        cout << "7. Sort Notes\n";
+        cout << "8. Add Resource\n";
+        cout << "9. Display Resources\n";
         cout << "0. Exit\n";
-        cout << "Choice: ";
+
+        cout << "Enter choice: ";
         cin >> choice;
 
         switch (choice) {
@@ -257,6 +323,8 @@ int main() {
             case 7: sortNotes(); break;
             case 8: addResource(); break;
             case 9: displayResources(); break;
+            case 0: cout << "Thank you!\n"; break;
+            default: cout << "Invalid choice!\n";
         }
 
     } while (choice != 0);
