@@ -4,15 +4,19 @@
 #include <vector>
 #include <string>
 #include <cctype>
+#include <limits>
 using namespace std;
 
+// Convert string to lowercase
 string toLowerCase(string s)
 {
     for (int i = 0; i < (int)s.length(); i++)
         s[i] = (char)tolower((unsigned char)s[i]);
+
     return s;
 }
 
+// Read string input
 string readText(string message)
 {
     string value;
@@ -21,6 +25,7 @@ string readText(string message)
     return value;
 }
 
+// Read valid number
 int readNumber(string message, int low, int high)
 {
     int number;
@@ -28,19 +33,22 @@ int readNumber(string message, int low, int high)
     while (true)
     {
         cout << message;
+
         if (cin >> number && number >= low && number <= high)
         {
-            cin.ignore(10000, '\n');
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
             return number;
         }
 
         cout << "Invalid input. Enter a number from "
              << low << " to " << high << ".\n";
+
         cin.clear();
-        cin.ignore(10000, '\n');
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
     }
 }
 
+// Tip structure
 struct Tip
 {
     int id;
@@ -50,6 +58,7 @@ struct Tip
     string text;
 };
 
+// Stack for recently viewed tip IDs
 class RecentStack
 {
 private:
@@ -67,17 +76,9 @@ public:
         return ids.empty();
     }
 
+    // Push every viewed tip ID
     void push(int id)
     {
-        for (int i = 0; i < (int)ids.size(); i++)
-        {
-            if (ids[i] == id)
-            {
-                ids.erase(ids.begin() + i);
-                break;
-            }
-        }
-
         if ((int)ids.size() == capacity)
             ids.erase(ids.begin());
 
@@ -91,6 +92,7 @@ public:
 
         id = ids.back();
         ids.pop_back();
+
         return true;
     }
 
@@ -106,25 +108,17 @@ public:
     void display()
     {
         for (int i = (int)ids.size() - 1; i >= 0; i--)
-        {
-            cout << ids[i] << "\n";
-        }
+            cout << "Tip ID: " << ids[i] << "\n";
     }
 };
 
+// Study Tips Manager
 class StudyTips
 {
 private:
     vector<Tip> tips;
     RecentStack recent;
     string fileName;
-
-    void printTip(Tip t)
-    {
-        cout << "\n[" << t.id << "] "
-             << "(" << t.subject << " - " << t.category << ")\n";
-        cout << t.text << "\n";
-    }
 
     int findTipIndex(int id)
     {
@@ -133,30 +127,21 @@ private:
             if (tips[i].id == id)
                 return i;
         }
+
         return -1;
     }
 
-    string normalizeSubject(string subject)
+    // Display tip and optionally add its ID to stack
+    void printTip(const Tip &t, bool addToHistory = true)
     {
-        subject = toLowerCase(subject);
+        cout << "\n[" << t.id << "] "
+             << "(" << t.subject << " - "
+             << t.category << ")\n";
 
-        if (subject.find("dsa") != string::npos ||
-            subject.find("data struct") != string::npos ||
-            subject == "ds")
-            return "dsa";
+        cout << t.text << "\n";
 
-        if (subject.find("oop") != string::npos ||
-            subject.find("c++") != string::npos ||
-            subject.find("cpp") != string::npos ||
-            subject.find("object") != string::npos)
-            return "oop";
-
-        return subject;
-    }
-
-    void printNoTips(string message)
-    {
-        cout << message << "\n";
+        if (addToHistory)
+            recent.push(t.id);
     }
 
 public:
@@ -166,15 +151,17 @@ public:
         loadFromFile();
     }
 
+    // Load tips from file
     void loadFromFile()
     {
         tips.clear();
+
         ifstream input(fileName);
 
         if (!input)
         {
-            cout << "Warning: Could not open " << fileName << ".\n";
-            cout << "Create the file and add tips in the required format.\n";
+            cout << "Warning: Could not open "
+                 << fileName << ".\n";
             return;
         }
 
@@ -201,27 +188,32 @@ public:
             try
             {
                 Tip t;
+
                 t.id = stoi(fields[0]);
                 t.subject = fields[1];
                 t.category = fields[2];
                 t.keywords = toLowerCase(fields[3]);
                 t.text = fields[4];
+
                 tips.push_back(t);
             }
             catch (...)
             {
-                cout << "Skipping an invalid line in the tips file.\n";
+                cout << "Skipping an invalid line.\n";
             }
         }
 
         input.close();
+
+        cout << tips.size() << " tips loaded.\n";
     }
 
+    // Display all tips
     void displayAll()
     {
         if (tips.empty())
         {
-            printNoTips("No tips available.");
+            cout << "No tips available.\n";
             return;
         }
 
@@ -229,6 +221,7 @@ public:
             printTip(tips[i]);
     }
 
+    // Filter by subject
     void filterBySubject()
     {
         vector<string> subjects;
@@ -257,37 +250,35 @@ public:
         }
 
         cout << "\nSubjects:\n";
+
         for (int i = 0; i < (int)subjects.size(); i++)
             cout << i + 1 << ". " << subjects[i] << "\n";
 
-        int choice = readNumber("Choose subject: ", 1, (int)subjects.size());
+        int choice = readNumber(
+            "Choose subject: ", 1, (int)subjects.size());
+
         string selected = subjects[choice - 1];
-        bool found = false;
 
         for (int i = 0; i < (int)tips.size(); i++)
         {
             if (tips[i].subject == selected)
-            {
                 printTip(tips[i]);
-                found = true;
-            }
         }
-
-        if (!found)
-            cout << "No tips for this subject.\n";
     }
 
+    // Filter by category
     void filterByCategory()
     {
         string categories[4] = {
-            "Concept", "Practice", "Revision", "Productivity"
-        };
+            "Concept", "Practice", "Revision", "Productivity"};
 
         cout << "\nCategories:\n";
+
         for (int i = 0; i < 4; i++)
             cout << i + 1 << ". " << categories[i] << "\n";
 
         int choice = readNumber("Choose category: ", 1, 4);
+
         string selected = categories[choice - 1];
         bool found = false;
 
@@ -304,18 +295,18 @@ public:
             cout << "No tips in this category.\n";
     }
 
+    // Search by keyword
     void searchByKeyword()
     {
-        string keyword = toLowerCase(readText("Enter a keyword: "));
+        string keyword = toLowerCase(
+            readText("Enter a keyword: "));
+
         bool found = false;
 
         for (int i = 0; i < (int)tips.size(); i++)
         {
-            string allKeywords = toLowerCase(tips[i].keywords);
-            string tipText = toLowerCase(tips[i].text);
-
-            if (allKeywords.find(keyword) != string::npos ||
-                tipText.find(keyword) != string::npos)
+            if (tips[i].keywords.find(keyword) != string::npos ||
+                toLowerCase(tips[i].text).find(keyword) != string::npos)
             {
                 printTip(tips[i]);
                 found = true;
@@ -326,9 +317,11 @@ public:
             cout << "No tips found for that keyword.\n";
     }
 
+    // Open tip using ID
     void viewTip()
     {
         int id = readNumber("Enter tip ID: ", 1, 100000);
+
         int index = findTipIndex(id);
 
         if (index == -1)
@@ -338,9 +331,9 @@ public:
         }
 
         printTip(tips[index]);
-        recent.push(id);
     }
 
+    // Display recent history
     void showRecent()
     {
         if (recent.isEmpty())
@@ -353,17 +346,17 @@ public:
         recent.display();
     }
 
+    // Go back to previous tip
     void goBack()
     {
-        int removedID;
+        int currentID;
+        int previousID;
 
-        if (!recent.pop(removedID))
+        if (!recent.pop(currentID))
         {
             cout << "No recent tip history.\n";
             return;
         }
-
-        int previousID;
 
         if (!recent.peek(previousID))
         {
@@ -372,19 +365,24 @@ public:
         }
 
         int index = findTipIndex(previousID);
+
         if (index != -1)
         {
-            cout << "Previous tip:\n";
-            printTip(tips[index]);
+            cout << "\nPrevious tip:\n";
+
+            // Do not push this tip again
+            printTip(tips[index], false);
         }
     }
 
+    // Main menu
     void menu()
     {
         while (true)
         {
-            cout << "\n===== STUDY TIPS (" << tips.size()
-                 << " loaded) =====\n";
+            cout << "\n===== STUDY TIPS ("
+                 << tips.size() << " loaded) =====\n";
+
             cout << "1. Display all tips\n";
             cout << "2. Filter by subject\n";
             cout << "3. Filter by category\n";
@@ -399,23 +397,28 @@ public:
 
             if (choice == 1)
                 displayAll();
+
             else if (choice == 2)
                 filterBySubject();
+
             else if (choice == 3)
                 filterByCategory();
+
             else if (choice == 4)
                 searchByKeyword();
+
             else if (choice == 5)
                 viewTip();
+
             else if (choice == 6)
                 showRecent();
+
             else if (choice == 7)
                 goBack();
+
             else if (choice == 8)
-            {
                 loadFromFile();
-                cout << tips.size() << " tips loaded.\n";
-            }
+
             else
                 return;
         }
@@ -425,6 +428,8 @@ public:
 int main()
 {
     StudyTips tips("tips.txt");
+
     tips.menu();
+
     return 0;
 }

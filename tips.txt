@@ -1,0 +1,35 @@
+1|DSA|Concept|arrays, data structures|Understand arrays, linked lists, stacks, and queues before solving complex problems.
+2|DSA|Practice|arrays, problems|Solve at least two array problems every day.
+3|DSA|Revision|time complexity, big o|Revise O(1), O(log n), O(n), and O(n log n) time complexities.
+4|DSA|Practice|linked list, pointers|Draw linked-list diagrams to understand pointer changes.
+5|DSA|Concept|stack, queue|Remember that a stack follows LIFO while a queue follows FIFO.
+6|DSA|Practice|sorting, searching|Implement binary search and common sorting algorithms yourself.
+7|DSA|Productivity|coding, consistency|Practice DSA regularly instead of studying everything in one day.
+8|C++|Concept|variables, data types|Understand int, float, double, char, and string data types.
+9|C++|Practice|functions, parameters|Write small programs using functions and avoid repeating code.
+10|C++|Concept|pointers, references|Understand pointers and references with small examples.
+11|C++|Practice|vectors, stl|Practice vector, string, map, set, and stack from the STL.
+12|C++|Revision|loops, conditions|Revise if-else, for, while, and do-while loops.
+13|OOP|Concept|classes, objects|A class defines the structure and behavior of objects.
+14|OOP|Concept|encapsulation, access specifiers|Use private data members and public member functions to protect data.
+15|OOP|Practice|constructors, destructors|Practice default and parameterized constructors.
+16|OOP|Concept|inheritance, polymorphism|Understand inheritance and polymorphism with simple examples.
+17|OOP|Revision|abstraction, encapsulation|Revise encapsulation, abstraction, inheritance, and polymorphism.
+18|DBMS|Concept|primary key, foreign key|A primary key uniquely identifies a row. A foreign key connects tables.
+19|DBMS|Practice|sql, select, where|Practice SELECT queries using WHERE and ORDER BY.
+20|DBMS|Practice|joins, sql joins|Learn INNER JOIN, LEFT JOIN, RIGHT JOIN, and FULL OUTER JOIN.
+21|DBMS|Concept|normalization, database|Understand how normalization reduces unnecessary data duplication.
+22|DBMS|Revision|acid, transactions|Revise Atomicity, Consistency, Isolation, and Durability.
+23|Operating Systems|Concept|process, thread|Understand the difference between a process and a thread.
+24|Operating Systems|Revision|cpu scheduling|Revise FCFS, SJF, Priority Scheduling, and Round Robin.
+25|Operating Systems|Concept|deadlock|Learn the four necessary conditions for deadlock.
+26|Computer Networks|Concept|osi, tcp ip|Study the OSI layers and the responsibility of each layer.
+27|Computer Networks|Revision|tcp, udp|Compare TCP and UDP, including reliability and connection setup.
+28|Computer Networks|Practice|ip address, subnetting|Practice identifying network and host portions of IPv4 addresses.
+29|Mathematics|Practice|logic, aptitude|Solve logical reasoning and quantitative aptitude questions daily.
+30|General|Productivity|pomodoro, focus|Study for 25 minutes and take a 5-minute break.
+31|General|Productivity|notes, revision|Write short summaries in your own words after every study session.
+32|General|Revision|active recall, spaced repetition|Test yourself without looking at your notes.
+33|General|Practice|projects, learning|Build small projects to apply the concepts you learn.
+34|General|Productivity|goals, planning|Set a clear goal for every study session.
+35|General|Productivity|breaks, sleep|Take regular breaks and maintain a consistent sleep schedule.
