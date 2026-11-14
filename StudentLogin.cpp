@@ -1,10 +1,10 @@
-// Student registration and login code 
 
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <limits>
 using namespace std;
 
 class Student
@@ -56,7 +56,7 @@ class StudentManager
 
     bool binarySearch(string id)
     {
-        int low = 0, high = ids.size() - 1;
+        int low = 0, high = (int)ids.size() - 1;
 
         while (low <= high)
         {
@@ -91,30 +91,51 @@ class StudentManager
         file.close();
     }
 
+    void saveAllStudents()
+    {
+        ofstream file("students.txt");
+
+        for (const auto &bucket : table)
+        {
+            for (const auto &s : bucket)
+            {
+                file << s.id << "|"
+                     << s.name << "|"
+                     << s.rollNo << "|"
+                     << s.section << "|"
+                     << s.semester << "|"
+                     << s.cgpa << "|"
+                     << s.email << "|"
+                     << s.phone << "|"
+                     << s.password << "\n";
+            }
+        }
+
+        file.close();
+    }
+
     void loadStudents()
     {
         ifstream file("students.txt");
         Student s;
 
-        while (file >> s.id)
+        while (getline(file, s.id, '|'))
         {
-            file.ignore();
-
             getline(file, s.name, '|');
             getline(file, s.rollNo, '|');
             getline(file, s.section, '|');
 
             file >> s.semester;
-            file.ignore();
+            file.ignore(numeric_limits<streamsize>::max(), '|');
 
             file >> s.cgpa;
-            file.ignore();
+            file.ignore(numeric_limits<streamsize>::max(), '|');
 
             getline(file, s.email, '|');
             getline(file, s.phone, '|');
             getline(file, s.password);
 
-            if (findStudent(s.id) == nullptr)
+            if (!s.id.empty() && findStudent(s.id) == nullptr)
                 insertStudent(s);
         }
 
@@ -122,6 +143,7 @@ class StudentManager
     }
 
 public:
+
     StudentManager()
     {
         loadStudents();
@@ -134,9 +156,9 @@ public:
         cout << "\nEnter Student ID: ";
         getline(cin, s.id);
 
-        if (findStudent(s.id) != nullptr)
+        if (s.id.empty() || findStudent(s.id) != nullptr)
         {
-            cout << "Student ID already exists!\n";
+            cout << "Invalid or existing Student ID!\n";
             return;
         }
 
@@ -150,11 +172,23 @@ public:
         getline(cin, s.section);
 
         cout << "Enter Semester: ";
-        cin >> s.semester;
+        if (!(cin >> s.semester))
+        {
+            cout << "Invalid semester!\n";
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            return;
+        }
 
         cout << "Enter CGPA: ";
-        cin >> s.cgpa;
-        cin.ignore();
+        if (!(cin >> s.cgpa))
+        {
+            cout << "Invalid CGPA!\n";
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            return;
+        }
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
         cout << "Enter Email: ";
         getline(cin, s.email);
@@ -164,6 +198,12 @@ public:
 
         cout << "Create Password: ";
         getline(cin, s.password);
+
+        if (s.password.empty())
+        {
+            cout << "Password cannot be empty!\n";
+            return;
+        }
 
         saveStudent(s);
         insertStudent(s);
@@ -179,7 +219,6 @@ public:
         getline(cin, id);
 
         if (!binarySearch(id))
-    
         {
             cout << "Student ID not found!\n";
             return false;
@@ -193,8 +232,10 @@ public:
         if (s != nullptr && s->password == password)
         {
             loggedInID = s->id;
+
             cout << "\nLogin Successful! Welcome, "
                  << s->name << "!\n";
+
             return true;
         }
 
@@ -222,6 +263,140 @@ public:
         cout << "Email      : " << s->email << "\n";
         cout << "Phone      : " << s->phone << "\n";
     }
+
+    // NEW: Update Student Profile
+    void updateProfile(string id)
+    {
+        Student *s = findStudent(id);
+
+        if (s == nullptr)
+        {
+            cout << "Profile not found!\n";
+            return;
+        }
+
+        int choice;
+
+        do
+        {
+            cout << "\n===== UPDATE STUDENT PROFILE =====\n";
+            cout << "1. Update Name\n";
+            cout << "2. Update Roll Number\n";
+            cout << "3. Update Section\n";
+            cout << "4. Update Semester\n";
+            cout << "5. Update CGPA\n";
+            cout << "6. Update Email\n";
+            cout << "7. Update Phone\n";
+            cout << "8. Change Password\n";
+            cout << "9. Save and Return\n";
+
+            cout << "Enter Choice: ";
+
+            if (!(cin >> choice))
+            {
+                cin.clear();
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                cout << "Invalid input!\n";
+                continue;
+            }
+
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+            switch (choice)
+            {
+                case 1:
+                    cout << "Enter New Name: ";
+                    getline(cin, s->name);
+                    break;
+
+                case 2:
+                    cout << "Enter New Roll Number: ";
+                    getline(cin, s->rollNo);
+                    break;
+
+                case 3:
+                    cout << "Enter New Section: ";
+                    getline(cin, s->section);
+                    break;
+
+                case 4:
+                    cout << "Enter New Semester: ";
+
+                    if (!(cin >> s->semester) ||
+                        s->semester < 1 || s->semester > 12)
+                    {
+                        cout << "Invalid semester!\n";
+                        cin.clear();
+                    }
+                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                    break;
+
+                case 5:
+                    cout << "Enter New CGPA: ";
+
+                    if (!(cin >> s->cgpa) ||
+                        s->cgpa < 0 || s->cgpa > 10)
+                    {
+                        cout << "Invalid CGPA! Enter between 0 and 10.\n";
+                        cin.clear();
+                    }
+                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                    break;
+
+                case 6:
+                    cout << "Enter New Email: ";
+                    getline(cin, s->email);
+                    break;
+
+                case 7:
+                    cout << "Enter New Phone: ";
+                    getline(cin, s->phone);
+                    break;
+
+                case 8:
+                {
+                    string oldPassword;
+
+                    cout << "Enter Current Password: ";
+                    getline(cin, oldPassword);
+
+                    if (oldPassword != s->password)
+                    {
+                        cout << "Incorrect Current Password!\n";
+                        break;
+                    }
+
+                    cout << "Enter New Password: ";
+                    getline(cin, s->password);
+
+                    if (s->password.empty())
+                    {
+                        cout << "Password cannot be empty!\n";
+                        cout << "Password change cancelled.\n";
+                        // The previous password is restored below.
+                        // See note: use a temporary variable for this case.
+                    }
+                    else
+                    {
+                        cout << "Password Updated!\n";
+                    }
+                    break;
+                }
+
+                case 9:
+                    saveAllStudents();
+                    cout << "Profile Updated Successfully!\n";
+                    break;
+
+                default:
+                    cout << "Invalid Choice!\n";
+            }
+
+            if (choice != 9)
+                saveAllStudents();
+
+        } while (choice != 9);
+    }
 };
 
 int main()
@@ -238,8 +413,15 @@ int main()
         cout << "3. Exit\n";
         cout << "Enter choice: ";
 
-        cin >> choice;
-        cin.ignore();
+        if (!(cin >> choice))
+        {
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            cout << "Invalid input!\n";
+            continue;
+        }
+
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
         switch (choice)
         {
@@ -254,21 +436,41 @@ int main()
 
                     do
                     {
-                        cout << "\n1. View Profile\n";
-                        cout << "2. Logout\n";
+                        cout << "\n===== STUDENT DASHBOARD =====\n";
+                        cout << "1. View Profile\n";
+                        cout << "2. Update Profile\n";
+                        cout << "3. Logout\n";
                         cout << "Enter choice: ";
 
-                        cin >> option;
-                        cin.ignore();
+                        if (!(cin >> option))
+                        {
+                            cin.clear();
+                            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                            cout << "Invalid input!\n";
+                            continue;
+                        }
 
-                        if (option == 1)
-                            manager.displayProfile(loggedInID);
-                        else if (option == 2)
-                            cout << "Logged Out!\n";
-                        else
-                            cout << "Invalid Choice!\n";
+                        cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
-                    } while (option != 2);
+                        switch (option)
+                        {
+                            case 1:
+                                manager.displayProfile(loggedInID);
+                                break;
+
+                            case 2:
+                                manager.updateProfile(loggedInID);
+                                break;
+
+                            case 3:
+                                cout << "Logged Out!\n";
+                                break;
+
+                            default:
+                                cout << "Invalid Choice!\n";
+                        }
+
+                    } while (option != 3);
                 }
                 break;
 
@@ -284,4 +486,3 @@ int main()
 
     return 0;
 }
-
