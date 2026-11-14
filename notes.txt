@@ -1,0 +1,9 @@
+104|Binary Trees|Data Structures|A binary tree has at most two children per node. Traversals: inorder, preorder, postorder.
+106|Integration Basics|Mathematics|Integration is the reverse of differentiation.
+101|Introduction to Arrays|Data Structures|Arrays store elements in contiguous memory and allow O(1) access by index.
+102|Linked Lists|Data Structures|A linked list is made of nodes where each node points to the next one.
+111|Logic design|Computer org|Cpu queue
+105|Newton's Laws|Physics|First law: inertia. Second law: F = ma. Third law: action and reaction.
+107|Normalization in DBMS|Database|Normalization reduces redundancy using 1NF, 2NF and 3NF.
+108|OSI Model|Networking|The OSI model has 7 layers: Physical, Data Link, Network, Transport, Session, Presentation, Application.
+103|Stacks and Queues|Data Structures|Stack follows LIFO, queue follows FIFO.

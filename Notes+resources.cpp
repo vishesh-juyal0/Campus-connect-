@@ -1,4 +1,3 @@
-
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -6,13 +5,15 @@
 #include <algorithm>
 using namespace std;
 
-struct Note {
+class Note {
+public:
     int id;
     string title, subject, content;
     Note *next, *hashNext;
 };
 
-struct Resource {
+class Resource {
+public:
     string title, subject, link;
     Resource *next;
 };
@@ -95,6 +96,8 @@ void loadData() {
         getline(ss, b, '|');
         getline(ss, c);
 
+        if (a.empty()) continue;
+
         Resource *p = new Resource{a, b, c, rhead};
         rhead = p;
     }
@@ -125,6 +128,7 @@ void createNote() {
     getline(cin, n->content);
 
     n->next = head;
+    n->hashNext = NULL;
     head = n;
 
     insertHash(n);

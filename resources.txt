@@ -1,0 +1,5 @@
+Computer Networking Basics|Networking|https://www.geeksforgeeks.org/computer-network-tutorials/
+W3Schools SQL Tutorial|Database|https://www.w3schools.com/sql/
+Paul's Online Math Notes|Mathematics|https://tutorial.math.lamar.edu/
+Khan Academy Physics|Physics|https://www.khanacademy.org/science/physics
+GeeksforGeeks DSA Tutorials|Data Structures|https://www.geeksforgeeks.org/data-structures/
