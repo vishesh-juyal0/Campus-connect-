@@ -59,7 +59,6 @@ double readHours(string message)
 
 bool validDate(string date)
 {
-    // Basic YYYY-MM-DD format and range checking.
     if (date.size() != 10 || date[4] != '-' || date[7] != '-')
         return false;
 
@@ -83,13 +82,139 @@ bool validDate(string date)
 struct Task
 {
     int id;
-    string type;       // Daily or Weekly
+    string type;       
     string subject;
     string topic;
-    string date;       // YYYY-MM-DD
+    string date;       
     double targetHours;
     double hoursDone;
     bool completed;
+};
+
+class TaskPriorityQueue
+{
+private:
+    vector<Task> heap;
+
+    bool higherPriority(Task a, Task b)
+    {
+        if(a.date != b.date)
+            return a.date < b.date;
+
+        return a.id < b.id;
+    }
+
+    void heapifyUp(int i)
+    {
+        while(i > 0)
+        {
+            int parent = (i - 1) / 2;
+
+            if(higherPriority(heap[i], heap[parent]))
+            {
+                swap(heap[i], heap[parent]);
+                i = parent;
+            }
+            else
+                break;
+        }
+    }
+
+    void heapifyDown(int i)
+    {
+        int n = heap.size();
+
+        while(true)
+        {
+            int smallest = i;
+            int left = 2 * i + 1;
+            int right = 2 * i + 2;
+
+            if(left < n &&
+               higherPriority(heap[left], heap[smallest]))
+                smallest = left;
+
+            if(right < n &&
+               higherPriority(heap[right], heap[smallest]))
+                smallest = right;
+
+            if(smallest != i)
+            {
+                swap(heap[i], heap[smallest]);
+                i = smallest;
+            }
+            else
+                break;
+        }
+    }
+
+public:
+    void push(Task t)
+    {
+        if(t.completed)
+            return;
+
+        heap.push_back(t);
+        heapifyUp(heap.size() - 1);
+    }
+
+    Task top()
+    {
+        if(heap.empty())
+        {
+            cout << "Priority Queue is empty.\n";
+            return Task{};
+        }
+
+        return heap[0];
+    }
+
+    void pop()
+    {
+        if(heap.empty())
+            return;
+
+        heap[0] = heap.back();
+        heap.pop_back();
+
+        if(!heap.empty())
+            heapifyDown(0);
+    }
+
+    bool empty()
+    {
+        return heap.empty();
+    }
+
+    int size()
+    {
+        return heap.size();
+    }
+
+    void display()
+    {
+        if(heap.empty())
+        {
+            cout << "No pending tasks.\n";
+            return;
+        }
+
+        TaskPriorityQueue temp = *this;
+
+        cout << "\nTasks in priority order:\n";
+
+        while(!temp.empty())
+        {
+            Task t = temp.top();
+
+            cout << "ID: " << t.id
+                 << " | Subject: " << t.subject
+                 << " | Topic: " << t.topic
+                 << " | Deadline: " << t.date << "\n";
+
+            temp.pop();
+        }
+    }
 };
 
 class StudyPlanner
@@ -131,6 +256,19 @@ private:
         out.close();
     }
 
+ void showPriorityTasks()
+{
+    TaskPriorityQueue pq;
+
+    for(int i = 0; i < (int)tasks.size(); i++)
+    {
+        if(!tasks[i].completed)
+            pq.push(tasks[i]);
+    }
+
+    pq.display();
+}
+
     void loadFromFile()
     {
         tasks.clear();
@@ -139,13 +277,12 @@ private:
 
         ifstream in(fileName);
         if (!in)
-            return; // The file will be created when tasks are saved.
+            return; 
 
         string line;
         while (getline(in, line))
         {
             string fields[8];
-            // Split the record using the pipe character.
             int field = 0;
             string value;
             for (int i = 0; i <= (int)line.size(); i++)
@@ -477,9 +614,10 @@ public:
             cout << "8. Study report\n";
             cout << "9. Show pending queue\n";
             cout << "10. Process next task\n";
+        cout << "11. Show priority tasks\n";
             cout << "0. Exit planner\n";
 
-            int choice = readNumber("Enter choice: ", 0, 10);
+            int choice = readNumber("Enter choice: ", 0, 11);
 
             if (choice == 1) addDailyTask();
             else if (choice == 2) addWeeklyTask();
@@ -491,6 +629,7 @@ public:
             else if (choice == 8) showReport();
             else if (choice == 9) showPendingQueue();
             else if (choice == 10) processNextTask();
+             else if(choice == 11) showPriorityTasks();
             else return;
         }
     }
