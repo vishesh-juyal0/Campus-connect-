@@ -1,0 +1,16 @@
+105|AFTERHOURS.exe 2027|Hackathon|AI ML Web3 Team Required|20270122
+106|HackIndia Chennai Overdrive 2027|Hackathon|AI ML Web3 Team Required|20270211
+107|Mailam Builds 27|Hackathon|AI ML Blockchain Team Required|20270312
+108|Hackcelerate 27|Hackathon|Web3 Healthcare IoT Team 2-4 Members|20270129
+109|HackIndia FIN NEXT 2027|Hackathon|FinTech AI Team 2-4 Members|20270118
+110|ENIGMA 2.0|Hackathon|Coding Puzzles UG PG Students|20270116
+111|NHAI Term Internship 2027|Internship|CGPA As Per Institute IT CSE Eligible|20270101
+112|NHAI Summer Internship 2027|Internship|CGPA As Per Institute Engineering Students|20270401
+113|Software Development Intern 2027|Internship|C++ DSA Minimum CGPA 7.0|20270115
+114|Frontend Developer Intern 2027|Internship|HTML CSS JavaScript Minimum CGPA 6.5|20270201
+115|AI ML Intern 2027|Internship|Python ML Minimum CGPA 7.5|20270301
+116|Quantile 2027 Spark|Quiz|Quantitative Aptitude Individual Students|20270117
+117|Quantile 2027 Orbit|Quiz|Quantitative Aptitude Individual Students|20270201
+118|Quantile 2027 Nova|Quiz|Quantitative Aptitude Individual Students|20270301
+119|Indian National Olympiad in Informatics|Quiz|Programming Algorithms Qualified Students|20270206
+120|INMO 2027|Quiz|Mathematics Qualified Students|20270117
