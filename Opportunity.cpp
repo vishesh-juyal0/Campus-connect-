@@ -1,132 +1,258 @@
 #include <iostream>
-#include <fstream>
-#include <sstream>
+#include <vector>
+#include <algorithm>
 #include <string>
-#include <iomanip>
-#include <cstdlib>
 using namespace std;
 
-struct Opportunity
+class Opportunity
 {
-    int id = 0;
-    string title, type, skill, deadline;
- 
+public:
+    int id;
+    string title, type, deadline, skill;
+
     void input()
     {
-        id = (int)readNumber("Opportunity ID: ", 1, 1000000);
-        title = readText("Title: ");
-        type = readText("Type (Job/Internship/Hackathon/Quiz): ");
-        skill = readText("Required Skill: ");
-        deadline = readText("Deadline (YYYYMMDD): ");
+        cout << "Enter Opportunity ID: ";
+        cin >> id;
+
+        cout << "Enter Title: ";
+        getline(cin >> ws, title);
+
+        cout << "Enter Type (Job/Internship/Hackathon/Quiz): ";
+        cin >> type;
+
+        cout << "Enter Required Skill: ";
+        getline(cin >> ws, skill);
+
+        cout << "Enter Deadline (YYYYMMDD): ";
+        cin >> deadline;
     }
-    void display() const
+
+    void display()
     {
-        cout << "\nOpportunity ID: " << id << "\nTitle: " << title << "\nType: " << type
-             << "\nRequired Skill: " << skill << "\nDeadline: " << deadline << "\n";
+        cout << "\nOpportunity ID: " << id;
+        cout << "\nTitle: " << title;
+        cout << "\nType: " << type;
+        cout << "\nRequired Skill: " << skill;
+        cout << "\nDeadline: " << deadline << "\n";
     }
 };
- 
+
 class OpportunityHub
 {
-    List<Opportunity> list;
- 
-    Opportunity *byId(const string &msg)
-    {
-        int id = (int)readNumber(msg, 1, 1000000);
-        return list.find([&](const Opportunity &o) { return o.id == id; });
-    }
-    template <class F>
-    void showWhere(F pred, const string &none)
-    {
-        bool any = false;
-        list.each([&](const Opportunity &o) {
-            if (pred(o))
-            {
-                o.display();
-                any = true;
-            }
-        });
-        if (!any)
-            cout << none << "\n";
-    }
- 
+    vector<Opportunity> opportunities;
+
 public:
-    void add()
+    void addOpportunity()
     {
         Opportunity o;
         o.input();
-        if (list.find([&](const Opportunity &x) { return x.id == o.id; }))
-            cout << "ID already exists!\n";
-        else
+
+        for (int i = 0; i < opportunities.size(); i++)
         {
-            list.push_back(o);
-            cout << "Opportunity Added Successfully!\n";
-        }
-    }
-    void displayAll() { showWhere([](const Opportunity &) { return true; }, "No Opportunities Available."); }
-    void search()
-    {
-        if (Opportunity *o = byId("Opportunity ID: "))
-            o->display();
-        else
-            cout << "Opportunity Not Found.\n";
-    }
-    void remove()
-    {
-        int id = (int)readNumber("Opportunity ID to Delete: ", 1, 1000000);
-        cout << (list.removeIf([&](const Opportunity &o) { return o.id == id; })
-                     ? "Opportunity Deleted Successfully!\n"
-                     : "Opportunity Not Found.\n");
-    }
-    void update()
-    {
-        if (Opportunity *o = byId("Opportunity ID to Update: "))
-        {
-            cout << "Enter New Details:\n";
-            o->input();
-            cout << "Opportunity Updated Successfully!\n";
-        }
-        else
-            cout << "Opportunity Not Found.\n";
-    }
-    void sortByDeadline()
-    {
-        list.sort([](const Opportunity &a, const Opportunity &b) { return a.deadline < b.deadline; });
-        cout << "Opportunities Sorted by Deadline.\n";
-        displayAll();
-    }
-    void filterByType()
-    {
-        string t = toLower(readText("Type to Filter: "));
-        showWhere([&](const Opportunity &o) { return toLower(o.type) == t; }, "No Matching Opportunities Found.");
-    }
-    void searchBySkill()
-    {
-        string s = toLower(readText("Skill to Search: "));
-        showWhere([&](const Opportunity &o) { return toLower(o.skill) == s; }, "No Opportunities Found for This Skill.");
-    }
-    void menu()
-    {
-        while (true)
-        {
-            cout << "\n===== CAMPUS CONNECT - OPPORTUNITY HUB =====\n"
-                    "1. Add Opportunity\n2. Display All\n3. Search by ID\n4. Delete\n"
-                    "5. Update\n6. Sort by Deadline\n7. Filter by Type\n8. Search by Skill\n0. Back\n";
-            switch ((int)readNumber("Choice: ", 0, 8))
+            if (opportunities[i].id == o.id)
             {
-            case 1: add(); break;
-            case 2: displayAll(); break;
-            case 3: search(); break;
-            case 4: remove(); break;
-            case 5: update(); break;
-            case 6: sortByDeadline(); break;
-            case 7: filterByType(); break;
-            case 8: searchBySkill(); break;
-            case 0: return;
+                cout << "ID already exists!\n";
+                return;
             }
         }
+
+        opportunities.push_back(o);
+        cout << "Opportunity Added Successfully!\n";
+    }
+
+    void displayOpportunities()
+    {
+        if (opportunities.empty())
+        {
+            cout << "No Opportunities Available.\n";
+            return;
+        }
+
+        for (int i = 0; i < opportunities.size(); i++)
+        {
+            opportunities[i].display();
+        }
+    }
+
+    void searchOpportunity()
+    {
+        int id;
+        cout << "Enter Opportunity ID: ";
+        cin >> id;
+
+        for (int i = 0; i < opportunities.size(); i++)
+        {
+            if (opportunities[i].id == id)
+            {
+                cout << "Opportunity Found!\n";
+                opportunities[i].display();
+                return;
+            }
+        }
+
+        cout << "Opportunity Not Found.\n";
+    }
+
+    void deleteOpportunity()
+    {
+        int id;
+        cout << "Enter Opportunity ID to Delete: ";
+        cin >> id;
+
+        for (int i = 0; i < opportunities.size(); i++)
+        {
+            if (opportunities[i].id == id)
+            {
+                opportunities.erase(opportunities.begin() + i);
+                cout << "Opportunity Deleted Successfully!\n";
+                return;
+            }
+        }
+
+        cout << "Opportunity Not Found.\n";
+    }
+
+    void updateOpportunity()
+    {
+        int id;
+        cout << "Enter Opportunity ID to Update: ";
+        cin >> id;
+
+        for (int i = 0; i < opportunities.size(); i++)
+        {
+            if (opportunities[i].id == id)
+            {
+                cout << "Enter New Details:\n";
+                opportunities[i].input();
+                cout << "Opportunity Updated Successfully!\n";
+                return;
+            }
+        }
+
+        cout << "Opportunity Not Found.\n";
+    }
+
+    void sortByDeadline()
+    {
+        sort(opportunities.begin(), opportunities.end(),
+             [](Opportunity a, Opportunity b)
+             {
+                 return a.deadline < b.deadline;
+             });
+
+        cout << "Opportunities Sorted by Deadline.\n";
+        displayOpportunities();
+    }
+
+    void filterByType()
+    {
+        string type;
+        int found = 0;
+
+        cout << "Enter Type to Filter: ";
+        cin >> type;
+
+        for (int i = 0; i < opportunities.size(); i++)
+        {
+            if (opportunities[i].type == type)
+            {
+                opportunities[i].display();
+                found = 1;
+            }
+        }
+
+        if (!found)
+            cout << "No Matching Opportunities Found.\n";
+    }
+
+    void searchBySkill()
+    {
+        string skill;
+        int found = 0;
+
+        cout << "Enter Skill to Search: ";
+        getline(cin >> ws, skill);
+
+        for (int i = 0; i < opportunities.size(); i++)
+        {
+            if (opportunities[i].skill == skill)
+            {
+                opportunities[i].display();
+                found = 1;
+            }
+        }
+
+        if (!found)
+            cout << "No Opportunities Found for This Skill.\n";
+    }
+
+    void menu()
+    {
+        int choice;
+
+        do
+        {
+            cout << "\n===== CAMPUS CONNECT =====\n";
+            cout << "       OPPORTUNITY HUB\n";
+            cout << "1. Add Opportunity\n";
+            cout << "2. Display All Opportunities\n";
+            cout << "3. Search by ID\n";
+            cout << "4. Delete Opportunity\n";
+            cout << "5. Update Opportunity\n";
+            cout << "6. Sort by Deadline\n";
+            cout << "7. Filter by Type\n";
+            cout << "8. Search by Skill\n";
+            cout << "0. Exit\n";
+            cout << "Enter Your Choice: ";
+            cin >> choice;
+
+            switch (choice)
+            {
+            case 1:
+                addOpportunity();
+                break;
+
+            case 2:
+                displayOpportunities();
+                break;
+
+            case 3:
+                searchOpportunity();
+                break;
+
+            case 4:
+                deleteOpportunity();
+                break;
+
+            case 5:
+                updateOpportunity();
+                break;
+
+            case 6:
+                sortByDeadline();
+                break;
+
+            case 7:
+                filterByType();
+                break;
+
+            case 8:
+                searchBySkill();
+                break;
+
+            case 0:
+                cout << "Exiting Opportunity Hub.\n";
+                break;
+
+            default:
+                cout << "Invalid Choice!\n";
+            }
+
+        } while (choice != 0);
     }
 };
+
 int main()
 {
     OpportunityHub hub;
@@ -134,5 +260,3 @@ int main()
 
     return 0;
 }
-
- 
