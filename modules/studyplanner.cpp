@@ -448,7 +448,7 @@ public:
         }
 
         cout << "Sort by:\n1. Date\n2. Hours remaining\n3. Subject\n";
-        int choice = readNumber("Choose: ", 1, 3)
+        int choice = readNumber("Choose: ", 1, 3);
         for (int i = 0; i < (int)tasks.size() - 1; i++)
         {
             for (int j = 0; j < (int)tasks.size() - i - 1; j++)

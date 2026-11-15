@@ -7,7 +7,6 @@
 #include <limits>
 using namespace std;
 
-// Convert string to lowercase
 string toLowerCase(string s)
 {
     for (int i = 0; i < (int)s.length(); i++)
@@ -16,7 +15,6 @@ string toLowerCase(string s)
     return s;
 }
 
-// Read string input
 string readText(string message)
 {
     string value;
@@ -25,7 +23,6 @@ string readText(string message)
     return value;
 }
 
-// Read valid number
 int readNumber(string message, int low, int high)
 {
     int number;
@@ -48,7 +45,6 @@ int readNumber(string message, int low, int high)
     }
 }
 
-// Tip structure
 struct Tip
 {
     int id;
@@ -58,7 +54,6 @@ struct Tip
     string text;
 };
 
-// Stack for recently viewed tip IDs
 class RecentStack
 {
 private:
@@ -76,7 +71,6 @@ public:
         return ids.empty();
     }
 
-    // Push every viewed tip ID
     void push(int id)
     {
         if ((int)ids.size() == capacity)
@@ -112,7 +106,6 @@ public:
     }
 };
 
-// Study Tips Manager
 class StudyTips
 {
 private:
@@ -131,7 +124,6 @@ private:
         return -1;
     }
 
-    // Display tip and optionally add its ID to stack
     void printTip(const Tip &t, bool addToHistory = true)
     {
         cout << "\n[" << t.id << "] "
@@ -151,7 +143,6 @@ public:
         loadFromFile();
     }
 
-    // Load tips from file
     void loadFromFile()
     {
         tips.clear();
@@ -208,7 +199,6 @@ public:
         cout << tips.size() << " tips loaded.\n";
     }
 
-    // Display all tips
     void displayAll()
     {
         if (tips.empty())
@@ -221,7 +211,6 @@ public:
             printTip(tips[i]);
     }
 
-    // Filter by subject
     void filterBySubject()
     {
         vector<string> subjects;
@@ -266,7 +255,6 @@ public:
         }
     }
 
-    // Filter by category
     void filterByCategory()
     {
         string categories[4] = {
@@ -295,7 +283,6 @@ public:
             cout << "No tips in this category.\n";
     }
 
-    // Search by keyword
     void searchByKeyword()
     {
         string keyword = toLowerCase(
@@ -317,7 +304,6 @@ public:
             cout << "No tips found for that keyword.\n";
     }
 
-    // Open tip using ID
     void viewTip()
     {
         int id = readNumber("Enter tip ID: ", 1, 100000);
@@ -333,7 +319,6 @@ public:
         printTip(tips[index]);
     }
 
-    // Display recent history
     void showRecent()
     {
         if (recent.isEmpty())
@@ -346,7 +331,6 @@ public:
         recent.display();
     }
 
-    // Go back to previous tip
     void goBack()
     {
         int currentID;
@@ -370,12 +354,10 @@ public:
         {
             cout << "\nPrevious tip:\n";
 
-            // Do not push this tip again
             printTip(tips[index], false);
         }
     }
 
-    // Main menu
     void menu()
     {
         while (true)
