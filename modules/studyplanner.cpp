@@ -665,6 +665,150 @@ void deleteTask()
     cout << "Task deleted successfully.\n";
 }
 
+void updateTask()
+{
+    if (tasks.empty())
+    {
+        cout << "No tasks available to update.\n";
+        return;
+    }
+
+    int id = readNumber("Enter task ID to update: ", 1, 1000000);
+    int index = findIndex(id);
+
+    if (index == -1)
+    {
+        cout << "Task not found.\n";
+        return;
+    }
+
+    Task &t = tasks[index];
+
+    cout << "Current task details:\n";
+    printTask(t);
+
+    cout << "\nEnter the new details.\n";
+
+    t.subject = readText("New subject: ");
+    t.topic = readText("New topic: ");
+
+    string newDate;
+
+    do
+    {
+        newDate = readText("New date (YYYY-MM-DD): ");
+
+        if (!validDate(newDate))
+            cout << "Invalid date format or range.\n";
+
+    } while (!validDate(newDate));
+
+    t.date = newDate;
+
+    double newTarget;
+
+    do
+    {
+        newTarget = readHours("New target study hours: ");
+
+        if (newTarget < t.hoursDone)
+            cout << "Target cannot be less than hours already completed ("
+                 << t.hoursDone << ").\n";
+
+    } while (newTarget < t.hoursDone);
+
+    t.targetHours = newTarget;
+
+    saveToFile();
+
+    cout << "Task updated successfully.\n";
+}
+
+void subjectWiseReport()
+{
+    if (tasks.empty())
+    {
+        cout << "No tasks available for a subject-wise report.\n";
+        return;
+    }
+
+    struct SubjectSummary
+    {
+        string subject;
+        int taskCount = 0;
+        int completedCount = 0;
+        double targetHours = 0;
+        double hoursDone = 0;
+    };
+
+    vector<SubjectSummary> summary;
+
+    for (int i = 0; i < (int)tasks.size(); i++)
+    {
+        string key = lowerText(tasks[i].subject);
+        int position = -1;
+
+        for (int j = 0; j < (int)summary.size(); j++)
+        {
+            if (lowerText(summary[j].subject) == key)
+            {
+                position = j;
+                break;
+            }
+        }
+
+        if (position == -1)
+        {
+            SubjectSummary item;
+            item.subject = tasks[i].subject;
+            summary.push_back(item);
+            position = (int)summary.size() - 1;
+        }
+
+        summary[position].taskCount++;
+        summary[position].targetHours += tasks[i].targetHours;
+        summary[position].hoursDone += tasks[i].hoursDone;
+
+        if (tasks[i].completed)
+            summary[position].completedCount++;
+    }
+
+    cout << "\n========== SUBJECT-WISE REPORT ==========\n";
+    cout << fixed << setprecision(2);
+
+    for (int i = 0; i < (int)summary.size(); i++)
+    {
+        double remaining = summary[i].targetHours - summary[i].hoursDone;
+
+        if (remaining < 0)
+            remaining = 0;
+
+        cout << "\nSubject: " << summary[i].subject << "\n";
+        cout << "Total tasks: " << summary[i].taskCount << "\n";
+        cout << "Completed tasks: " << summary[i].completedCount << "\n";
+
+        cout << "Pending tasks: "
+             << summary[i].taskCount - summary[i].completedCount << "\n";
+
+        cout << "Target hours: " << summary[i].targetHours << "\n";
+        cout << "Hours studied: " << summary[i].hoursDone << "\n";
+        cout << "Hours remaining: " << remaining << "\n";
+
+        if (summary[i].targetHours > 0)
+        {
+            double percentage =
+                (summary[i].hoursDone / summary[i].targetHours) * 100.0;
+
+            if (percentage > 100)
+                percentage = 100;
+
+            cout << "Progress: " << percentage << "%\n";
+        }
+        else
+            cout << "Progress: 0%\n";
+    }
+}
+
         while (true)
         {
             cout << "\n========== STUDY PLANNER ==========\n";
@@ -679,9 +823,13 @@ void deleteTask()
             cout << "9. Show pending queue\n";
             cout << "10. Process next task\n";
         cout << "11. Show priority tasks\n";
+         cout << "12. Search tasks\n";
+         cout << "13. Delete a task\n";
+         cout << "14. Update a task\n";
+         cout << "15. Subject-wise report\n";
             cout << "0. Exit planner\n";
 
-            int choice = readNumber("Enter choice: ", 0, 11);
+            int choice = readNumber("Enter choice: ", 0, 15);
 
             if (choice == 1) addDailyTask();
             else if (choice == 2) addWeeklyTask();
@@ -693,7 +841,11 @@ void deleteTask()
             else if (choice == 8) showReport();
             else if (choice == 9) showPendingQueue();
             else if (choice == 10) processNextTask();
-             else if(choice == 11) showPriorityTasks();
+             else if(choice == 11)
+else if (choice == 12) searchTasks();
+else if (choice == 13) deleteTask();
+else if (choice == 14) updateTask();
+else if (choice == 15) subjectWiseReport(); showPriorityTasks();
             else return;
         }
     }
