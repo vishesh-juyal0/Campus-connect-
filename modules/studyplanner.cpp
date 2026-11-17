@@ -630,6 +630,41 @@ void searchTasks()
     if (!found)
         cout << "No matching tasks found.\n";
 }
+void deleteTask()
+{
+    if (tasks.empty())
+    {
+        cout << "No tasks available to delete.\n";
+        return;
+    }
+
+    int id = readNumber("Enter task ID to delete: ", 1, 1000000);
+    int index = findIndex(id);
+
+    if (index == -1)
+    {
+        cout << "Task not found.\n";
+        return;
+    }
+
+    cout << "Task selected for deletion:\n";
+    printTask(tasks[index]);
+
+    int confirm = readNumber("Delete this task? (1 = Yes, 2 = No): ", 1, 2);
+
+    if (confirm == 2)
+    {
+        cout << "Deletion cancelled.\n";
+        return;
+    }
+
+    tasks.erase(tasks.begin() + index);
+    removePendingID(id);
+    saveToFile();
+
+    cout << "Task deleted successfully.\n";
+}
+
         while (true)
         {
             cout << "\n========== STUDY PLANNER ==========\n";
