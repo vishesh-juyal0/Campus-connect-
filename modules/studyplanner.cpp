@@ -601,6 +601,35 @@ public:
 
     void menu()
     {
+void searchTasks()
+{
+    if (tasks.empty())
+    {
+        cout << "No tasks available to search.\n";
+        return;
+    }
+
+    string key = lowerText(readText("Enter subject, topic, or type to search: "));
+    bool found = false;
+
+    for (int i = 0; i < (int)tasks.size(); i++)
+    {
+        string subject = lowerText(tasks[i].subject);
+        string topic = lowerText(tasks[i].topic);
+        string type = lowerText(tasks[i].type);
+
+        if (subject.find(key) != string::npos ||
+            topic.find(key) != string::npos ||
+            type.find(key) != string::npos)
+        {
+            printTask(tasks[i]);
+            found = true;
+        }
+    }
+
+    if (!found)
+        cout << "No matching tasks found.\n";
+}
         while (true)
         {
             cout << "\n========== STUDY PLANNER ==========\n";
