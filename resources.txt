@@ -3,3 +3,119 @@ W3Schools SQL Tutorial|Database|https://www.w3schools.com/sql/
 Paul's Online Math Notes|Mathematics|https://tutorial.math.lamar.edu/
 Khan Academy Physics|Physics|https://www.khanacademy.org/science/physics
 GeeksforGeeks DSA Tutorials|Data Structures|https://www.geeksforgeeks.org/data-structures/
+C++ Programming Tutorial|Programming|https://www.geeksforgeeks.org/c-plus-plus/
+W3Schools C++ Tutorial|Programming|https://www.w3schools.com/cpp/
+Learn C++|Programming|https://www.learncpp.com/
+Programiz C++ Tutorial|Programming|https://www.programiz.com/cpp-programming
+
+W3Schools SQL Tutorial|Database|https://www.w3schools.com/sql/
+GeeksforGeeks DBMS|Database|https://www.geeksforgeeks.org/dbms/
+SQLBolt Interactive Lessons|Database|https://sqlbolt.com/
+PostgreSQL Documentation|Database|https://www.postgresql.org/docs/
+MongoDB University|Database|https://learn.mongodb.com/
+MySQL Documentation|Database|https://dev.mysql.com/doc/
+
+Operating Systems Tutorials|Operating Systems|https://www.geeksforgeeks.org/operating-systems/
+OSTEP Book|Operating Systems|https://pages.cs.wisc.edu/~remzi/OSTEP/
+TutorialsPoint OS|Operating Systems|https://www.tutorialspoint.com/operating_system/index.htm
+Linux Documentation|Operating Systems|https://www.kernel.org/doc/html/latest/
+
+Computer Networking Basics|Networking|https://www.geeksforgeeks.org/computer-network-tutorials/
+Cisco Networking Academy|Networking|https://www.netacad.com/
+Cloudflare Learning Center|Networking|https://www.cloudflare.com/learning/
+Computer Networking Tutorials|Networking|https://www.tutorialspoint.com/computer_networking/index.htm
+MDN HTTP Guide|Networking|https://developer.mozilla.org/en-US/docs/Web/HTTP
+
+W3Schools HTML Tutorial|Web Development|https://www.w3schools.com/html/
+W3Schools CSS Tutorial|Web Development|https://www.w3schools.com/css/
+W3Schools JavaScript Tutorial|Web Development|https://www.w3schools.com/js/
+MDN Web Development|Web Development|https://developer.mozilla.org/
+React Documentation|Web Development|https://react.dev/
+Node.js Documentation|Web Development|https://nodejs.org/docs/latest/api/
+FreeCodeCamp|Web Development|https://www.freecodecamp.org/
+The Odin Project|Web Development|https://www.theodinproject.com/
+
+Khan Academy Mathematics|Mathematics|https://www.khanacademy.org/math
+Paul's Online Math Notes|Mathematics|https://tutorial.math.lamar.edu/
+Wolfram MathWorld|Mathematics|https://mathworld.wolfram.com/
+Brilliant Mathematics|Mathematics|https://brilliant.org/
+MIT OpenCourseWare Mathematics|Mathematics|https://ocw.mit.edu/courses/mathematics/
+
+Khan Academy Physics|Physics|https://www.khanacademy.org/science/physics
+Physics Classroom|Physics|https://www.physicsclassroom.com/
+HyperPhysics|Physics|http://hyperphysics.phy-astr.gsu.edu/
+OpenStax Physics|Physics|https://openstax.org/subjects/science
+
+Scikit-learn Documentation|Machine Learning|https://scikit-learn.org/stable/
+Google Machine Learning Crash Course|Machine Learning|https://developers.google.com/machine-learning/crash-course
+Kaggle Learn|Machine Learning|https://www.kaggle.com/learn
+Machine Learning Tutorials|Machine Learning|https://www.geeksforgeeks.org/machine-learning/
+StatQuest|Machine Learning|https://statquest.org/
+
+DeepLearning.AI|Artificial Intelligence|https://www.deeplearning.ai/
+TensorFlow Tutorials|Artificial Intelligence|https://www.tensorflow.org/tutorials
+PyTorch Tutorials|Artificial Intelligence|https://pytorch.org/tutorials/
+Hugging Face Course|Artificial Intelligence|https://huggingface.co/learn
+OpenAI Documentation|Artificial Intelligence|https://platform.openai.com/docs/
+
+MIT OpenCourseWare Computer Science|Computer Science|https://ocw.mit.edu/
+Stanford Engineering Everywhere|Computer Science|https://see.stanford.edu/
+CS50 Harvard|Computer Science|https://cs50.harvard.edu/
+NPTEL Online Courses|Computer Science|https://nptel.ac.in/
+Saylor Academy Computer Science|Computer Science|https://www.saylor.org/
+GeeksforGeeks OOP Concepts|OOP|https://www.geeksforgeeks.org/object-oriented-programming-oops-concept-in-java/
+Refactoring Guru|OOP|https://refactoring.guru/
+SOLID Principles|Software Engineering|https://www.baeldung.com/solid-principles
+Design Patterns|Software Engineering|https://sourcemaking.com/design_patterns
+Git Documentation|Development Tools|https://git-scm.com/doc
+GitHub Skills|Development Tools|https://skills.github.com/
+Learn Git Branching|Development Tools|https://learngitbranching.js.org/
+Docker Documentation|DevOps|https://docs.docker.com/
+Kubernetes Tutorials|DevOps|https://kubernetes.io/docs/tutorials/
+Jenkins Documentation|DevOps|https://www.jenkins.io/doc/
+AWS Skill Builder|Cloud Computing|https://skillbuilder.aws/
+Microsoft Learn Azure|Cloud Computing|https://learn.microsoft.com/en-us/training/azure/
+Google Cloud Skills Boost|Cloud Computing|https://www.cloudskillsboost.google/
+Oracle Java Documentation|Programming|https://docs.oracle.com/en/java/
+Rust Programming Book|Programming|https://doc.rust-lang.org/book/
+Go Programming Tour|Programming|https://go.dev/tour/
+Ruby Documentation|Programming|https://www.ruby-lang.org/en/documentation/
+PHP Manual|Programming|https://www.php.net/manual/en/
+Kotlin Documentation|Programming|https://kotlinlang.org/docs/home.html
+Swift Documentation|Programming|https://www.swift.org/documentation/
+Codewars Practice|Programming Practice|https://www.codewars.com/
+Exercism Coding Practice|Programming Practice|https://exercism.org/
+Project Euler|Programming Practice|https://projecteuler.net/
+AtCoder Practice|Competitive Programming|https://atcoder.jp/
+Topcoder|Competitive Programming|https://www.topcoder.com/
+GeeksforGeeks Computer Architecture|Computer Architecture|https://www.geeksforgeeks.org/computer-organization-and-architecture-tutorials/
+RISC-V Learning Resources|Computer Architecture|https://riscv.org/learn/
+Digital Logic Design|Digital Electronics|https://www.electronics-tutorials.ws/
+All About Circuits|Electronics|https://www.allaboutcircuits.com/
+Electronics Tutorials|Electronics|https://www.electronics-tutorials.ws/
+Nand2Tetris|Computer Architecture|https://www.nand2tetris.org/
+GeeksforGeeks Software Engineering|Software Engineering|https://www.geeksforgeeks.org/software-engineering/
+Atlassian Agile Coach|Project Management|https://www.atlassian.com/agile
+Scrum Guide|Project Management|https://scrumguides.org/
+UML Diagrams|Software Engineering|https://www.uml-diagrams.org/
+PlantUML Documentation|Software Engineering|https://plantuml.com/
+NumPy Documentation|Data Science|https://numpy.org/doc/
+Pandas Documentation|Data Science|https://pandas.pydata.org/docs/
+Matplotlib Tutorials|Data Science|https://matplotlib.org/stable/tutorials/
+SciPy Documentation|Data Science|https://docs.scipy.org/doc/scipy/
+Seaborn Documentation|Data Science|https://seaborn.pydata.org/
+Google Colab|Data Science|https://colab.research.google.com/
+Jupyter Documentation|Data Science|https://docs.jupyter.org/
+KDnuggets|Data Science|https://www.kdnuggets.com/
+DataCamp Resources|Data Science|https://www.datacamp.com/
+Towards Data Science|Data Science|https://towardsdatascience.com/
+Papers With Code|Artificial Intelligence|https://paperswithcode.com/
+OpenCV Tutorials|Computer Vision|https://docs.opencv.org/
+FastAI Course|Deep Learning|https://course.fast.ai/
+DeepLearning Book|Deep Learning|https://www.deeplearningbook.org/
+Google AI Education|Artificial Intelligence|https://ai.google/education/
+Elements of AI|Artificial Intelligence|https://www.elementsofai.com/
+AI for Everyone|Artificial Intelligence|https://www.coursera.org/learn/ai-for-everyone
+Internet Archive Books|Study Materials|https://archive.org/details/texts
+Open Textbook Library|Study Materials|https://open.umn.edu/opentextbooks
+LibreTexts|Study Materials|https://libretexts.org/
